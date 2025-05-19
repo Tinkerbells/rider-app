@@ -75,8 +75,8 @@ export const AddEventDialog: FC<AddEventDialogProps> = ({ open, onClose }) => {
     }
 
     await addEvent(newEvent)
-    // reset()
-    // onClose()
+    reset()
+    onClose()
   }
 
   const handleCancel = () => {

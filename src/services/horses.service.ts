@@ -6,31 +6,45 @@ import { returnAfterDelay } from '@/common'
 
 import { LocalStorageService } from './local-storage.service'
 
+interface HorsesStorage {
+  horses: Horse[]
+}
+
 export class HorsesService implements IHorsesRepository {
   private readonly HORSES_KEY: string = 'horses'
   storage: IStorage = new LocalStorageService()
+
+  private getHorses(): Horse[] {
+    const storage = this.storage.getAsObject<HorsesStorage>(this.HORSES_KEY)
+    return storage.horses || []
+  }
+
+  private saveHorses(horses: Horse[]): void {
+    this.storage.setObject(this.HORSES_KEY, { horses })
+  }
+
   findAll() {
-    const horses = this.storage.getAsObject<Horse[]>(this.HORSES_KEY)
+    const horses = this.getHorses()
     return returnAfterDelay(horses)
   }
 
   addHorse(horse: Horse) {
-    const horses = this.storage.getAsObject<Horse[]>(this.HORSES_KEY)
-    this.storage.setObject(this.HORSES_KEY, [...horses, horse])
+    const horses = this.getHorses()
+    this.saveHorses([...horses, horse])
     return returnAfterDelay([...horses, horse])
   }
 
   updateHorse(id: Horse['id'], horse: Horse) {
-    const horses = this.storage.getAsObject<Horse[]>(this.HORSES_KEY)
+    const horses = this.getHorses()
     const updatedHorses = horses.map(h => h.id === id ? { ...h, ...horse } : h)
-    this.storage.setObject(this.HORSES_KEY, updatedHorses)
+    this.saveHorses(updatedHorses)
     return returnAfterDelay(updatedHorses)
   }
 
   removeHorse(id: Horse['id']) {
-    const horses = this.storage.getAsObject<Horse[]>(this.HORSES_KEY)
+    const horses = this.getHorses()
     const filteredHorses = horses.filter(h => h.id !== id)
-    this.storage.setObject(this.HORSES_KEY, filteredHorses)
+    this.saveHorses(filteredHorses)
     return returnAfterDelay(filteredHorses)
   }
 }
