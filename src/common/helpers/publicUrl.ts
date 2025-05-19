@@ -8,16 +8,17 @@ export function publicUrl(path: string): string {
   // equal to "/my-base", then passing the path equal to "tonconnect-manifest.json" will not
   // give us the expected result, it will actually be "/tonconnect-manifest.json", but the expected
   // one is "/my-base/tonconnect-manifest.json". This is due to the URL constructor.
-  let baseUrl = import.meta.env.BASE_URL;
+  let baseUrl = import.meta.env.BASE_URL
   if (!baseUrl.endsWith('/')) {
-    baseUrl += '/';
+    baseUrl += '/'
   }
 
-  let isBaseAbsolute = false;
+  let isBaseAbsolute = false
   try {
-    new URL(baseUrl);
-    isBaseAbsolute = true;
-  } catch { /* empty */
+    new URL(baseUrl)
+    isBaseAbsolute = true
+  }
+  catch { /* empty */
   }
 
   return new URL(
@@ -29,5 +30,6 @@ export function publicUrl(path: string): string {
     isBaseAbsolute
       ? baseUrl
       : window.location.origin + baseUrl,
-  ).toString();
+  ).toString()
 }
+
