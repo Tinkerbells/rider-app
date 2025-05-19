@@ -22,9 +22,15 @@ export class HorsesService implements IHorsesRepository {
 
   updateHorse(id: Horse['id'], horse: Horse) {
     const horses = this.storage.getAsObject<Horse[]>(this.HORSES_KEY)
+    const updatedHorses = horses.map(h => h.id === id ? { ...h, ...horse } : h)
+    this.storage.setObject(this.HORSES_KEY, updatedHorses)
+    return returnAfterDelay(updatedHorses)
   }
 
-  removeHorse(id: Horse['id'], horse: Horse) {
+  removeHorse(id: Horse['id']) {
     const horses = this.storage.getAsObject<Horse[]>(this.HORSES_KEY)
+    const filteredHorses = horses.filter(h => h.id !== id)
+    this.storage.setObject(this.HORSES_KEY, filteredHorses)
+    return returnAfterDelay(filteredHorses)
   }
 }
