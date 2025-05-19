@@ -1,6 +1,6 @@
 import { TonConnectUIProvider } from '@tonconnect/ui-react'
 
-import { publicUrl } from '@/helpers/publicUrl.ts'
+import { publicUrl } from '@/common/helpers/publicUrl'
 
 import { App } from './app'
 import { ErrorBoundary } from './error-boundary'

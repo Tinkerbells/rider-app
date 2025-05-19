@@ -1,11 +1,24 @@
 import { useMemo } from 'react'
+import { CssBaseline } from '@mui/material'
 import { AppRoot } from '@telegram-apps/telegram-ui'
-import { HashRouter, Navigate, Route, Routes } from 'react-router-dom'
+import { withErrorBoundary } from 'react-error-boundary'
+import '@fontsource/roboto/300.css'
+import '@fontsource/roboto/400.css'
+import '@fontsource/roboto/500.css'
+import '@fontsource/roboto/700.css'
 import { isMiniAppDark, retrieveLaunchParams, useSignal } from '@telegram-apps/sdk-react'
 
-import { routes } from '@/config/navigation/routes'
+import { BrowserRouter } from './router'
+import { compose, ErrorHandler, logError } from './react'
 
-export function App() {
+const enhance = compose(component =>
+  withErrorBoundary(component, {
+    FallbackComponent: ErrorHandler,
+    onError: logError,
+  }),
+)
+
+export const App = enhance(() => {
   const lp = useMemo(() => retrieveLaunchParams(), [])
   const isDark = useSignal(isMiniAppDark)
 
@@ -14,12 +27,8 @@ export function App() {
       appearance={isDark ? 'dark' : 'light'}
       platform={['macos', 'ios'].includes(lp.tgWebAppPlatform) ? 'ios' : 'base'}
     >
-      <HashRouter>
-        <Routes>
-          {routes.map(route => <Route key={route.path} {...route} />)}
-          <Route path="*" element={<Navigate to="/" />} />
-        </Routes>
-      </HashRouter>
+      <BrowserRouter />
+      <CssBaseline />
     </AppRoot>
   )
-}
+})
