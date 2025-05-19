@@ -1,13 +1,9 @@
-import { CircularProgress } from '@mui/material'
 import { createHashRouter, Outlet, RouterProvider } from 'react-router'
 
 import { NavigationMenu } from '../ui'
-import { compose, withSuspense } from './react'
 import { homePageRoute } from '../home/home.route'
-
-const enhance = compose(component =>
-  withSuspense(component, { FallbackComponent: CircularProgress }),
-)
+import { tasksPageRoute } from '../tasks/tasks.route'
+import { horsesPageRoute } from '../horses/horses.route'
 
 function MainLayout() {
   return (
@@ -22,7 +18,11 @@ const browserRouter = createHashRouter([
   {
     path: '/',
     element: <MainLayout />,
-    children: [homePageRoute],
+    children: [
+      homePageRoute,
+      horsesPageRoute,
+      tasksPageRoute,
+    ],
   },
 ])
 

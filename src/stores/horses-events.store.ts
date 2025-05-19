@@ -1,131 +1,122 @@
-import { makeAutoObservable, runInAction } from 'mobx'
+import { makeAutoObservable } from 'mobx'
+import { MobxMutation, MobxQuery } from 'mobx-tanstack-query'
 
 import type { HorseEvent } from '@/domain/horse-event.domain'
 
+import { queryClient } from '@/presentation/core/react/query-client'
 import { HorsesEventsService } from '@/services/horses-events.service'
 
+const EVENTS_QUERY_KEY = 'horse-events'
+
 class HorseEventsStore {
-  events: HorseEvent[] = []
-  filteredEvents: HorseEvent[] = []
-  loading = false
-  error: string | null = null
-  selectedDate: string = new Date().toISOString().split('T')[0] // Today's date in YYYY-MM-DD format
+  selectedDate: string = new Date().toISOString().split('T')[0]
+
+  // Запрос для получения всех событий
+  eventsQuery = new MobxQuery<HorseEvent[], Error>({
+    queryClient,
+    queryKey: [EVENTS_QUERY_KEY],
+    queryFn: () => this.eventsService.findAll(),
+  })
+
+  // Мутация для добавления события
+  addEventMutation = new MobxMutation<HorseEvent[], HorseEvent, Error>({
+    queryClient,
+    mutationFn: event => this.eventsService.addEvent(event),
+    onSuccess: () => {
+      // Инвалидируем кэш после успешного добавления
+      queryClient.invalidateQueries({ queryKey: [EVENTS_QUERY_KEY] })
+    },
+  })
+
+  // Мутация для обновления события
+  updateEventMutation = new MobxMutation<
+    HorseEvent[],
+    { id: HorseEvent['id'], event: Partial<HorseEvent> },
+    Error
+  >({
+    queryClient,
+    mutationFn: ({ id, event }) => this.eventsService.updateEvent(id, event),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [EVENTS_QUERY_KEY] })
+    },
+  })
+
+  // Мутация для удаления события
+  removeEventMutation = new MobxMutation<HorseEvent[], HorseEvent['id'], Error>({
+    queryClient,
+    mutationFn: id => this.eventsService.removeEvent(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [EVENTS_QUERY_KEY] })
+    },
+  })
+
+  // Мутация для переключения статуса "выполнено"
+  toggleCompletedMutation = new MobxMutation<HorseEvent[], HorseEvent['id'], Error>({
+    queryClient,
+    mutationFn: id => this.eventsService.toggleCompleted(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [EVENTS_QUERY_KEY] })
+      // Здесь не показываем уведомление, чтобы не раздражать пользователя
+    },
+  })
 
   constructor(private eventsService: HorsesEventsService) {
-    makeAutoObservable(this)
-    this.loadEvents()
+    makeAutoObservable(this, {}, { autoBind: true })
   }
 
   setSelectedDate(date: string) {
     this.selectedDate = date
-    this.filterEventsByDate()
   }
 
-  filterEventsByDate() {
-    this.filteredEvents = this.events.filter(event => event.date === this.selectedDate)
+  get events(): HorseEvent[] {
+    return this.eventsQuery.result.data || []
   }
 
-  async loadEvents() {
-    this.loading = true
-    this.error = null
-
-    try {
-      const events = await this.eventsService.findAll()
-      runInAction(() => {
-        this.events = events
-        this.filterEventsByDate()
-        this.loading = false
-      })
-    }
-    catch (error) {
-      runInAction(() => {
-        this.error = (error as Error).message
-        this.loading = false
-      })
-    }
+  // Получение событий, отфильтрованных по выбранной дате
+  get filteredEvents(): HorseEvent[] {
+    return this.events.filter(event => event.date === this.selectedDate)
   }
 
-  async addEvent(event: HorseEvent) {
-    this.loading = true
-    this.error = null
-
-    try {
-      const updatedEvents = await this.eventsService.addEvent(event)
-      runInAction(() => {
-        this.events = updatedEvents
-        this.filterEventsByDate()
-        this.loading = false
-      })
-    }
-    catch (error) {
-      runInAction(() => {
-        this.error = (error as Error).message
-        this.loading = false
-      })
-    }
+  get loading(): boolean {
+    return (
+      this.eventsQuery.result.isLoading
+      || this.addEventMutation.result.isPending
+      || this.updateEventMutation.result.isPending
+      || this.removeEventMutation.result.isPending
+      || this.toggleCompletedMutation.result.isPending
+    )
   }
 
-  async updateEvent(id: HorseEvent['id'], eventUpdate: Partial<HorseEvent>) {
-    this.loading = true
-    this.error = null
+  // Данные с ошибкой
+  get error(): string | null {
+    const error
+      = this.eventsQuery.result.error
+        || this.addEventMutation.result.error
+        || this.updateEventMutation.result.error
+        || this.removeEventMutation.result.error
+        || this.toggleCompletedMutation.result.error
 
-    try {
-      const updatedEvents = await this.eventsService.updateEvent(id, eventUpdate)
-      runInAction(() => {
-        this.events = updatedEvents
-        this.filterEventsByDate()
-        this.loading = false
-      })
-    }
-    catch (error) {
-      runInAction(() => {
-        this.error = (error as Error).message
-        this.loading = false
-      })
-    }
+    return error ? error.message : null
   }
 
-  async removeEvent(id: HorseEvent['id']) {
-    this.loading = true
-    this.error = null
-
-    try {
-      const updatedEvents = await this.eventsService.removeEvent(id)
-      runInAction(() => {
-        this.events = updatedEvents
-        this.filterEventsByDate()
-        this.loading = false
-      })
-    }
-    catch (error) {
-      runInAction(() => {
-        this.error = (error as Error).message
-        this.loading = false
-      })
-    }
+  // Публичные методы для работы с событиями
+  addEvent(event: HorseEvent) {
+    this.addEventMutation.mutate(event)
   }
 
-  async toggleEventCompleted(id: HorseEvent['id']) {
-    this.loading = true
-    this.error = null
-
-    try {
-      const updatedEvents = await this.eventsService.toggleCompleted(id)
-      runInAction(() => {
-        this.events = updatedEvents
-        this.filterEventsByDate()
-        this.loading = false
-      })
-    }
-    catch (error) {
-      runInAction(() => {
-        this.error = (error as Error).message
-        this.loading = false
-      })
-    }
+  updateEvent(id: HorseEvent['id'], event: Partial<HorseEvent>) {
+    this.updateEventMutation.mutate({ id, event })
   }
 
-  // Get events grouped by time
+  removeEvent(id: HorseEvent['id']) {
+    this.removeEventMutation.mutate(id)
+  }
+
+  toggleEventCompleted(id: HorseEvent['id']) {
+    this.toggleCompletedMutation.mutate(id)
+  }
+
+  // Группировка событий по времени для отображения в UI
   get eventsByTime() {
     const groupedEvents: { [time: string]: HorseEvent[] } = {}
 
@@ -144,5 +135,4 @@ class HorseEventsStore {
 }
 
 // Initialize the store
-
 export const horseEventsStore = new HorseEventsStore(new HorsesEventsService())
