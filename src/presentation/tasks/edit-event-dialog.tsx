@@ -164,17 +164,12 @@ export const EditEventDialog: FC<EditEventDialogProps> = ({ open, onClose, event
                     {...field}
                     label="Лошадь"
                   >
-                    {horses.length > 0
-                      ? (
-                          horses.map(horse => (
-                            <MenuItem key={horse.id} value={horse.id}>
-                              {horse.name}
-                            </MenuItem>
-                          ))
-                        )
-                      : (
-                          <MenuItem value={1}>Лис</MenuItem>
-                        )}
+                    {horses
+                      && horses.map(horse => (
+                        <MenuItem key={horse.id} value={horse.id}>
+                          {horse.name}
+                        </MenuItem>
+                      ))}
                   </Select>
                   {errors.horseId && (
                     <FormHelperText>{errors.horseId.message}</FormHelperText>

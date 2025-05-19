@@ -4,14 +4,12 @@ import EditIcon from '@mui/icons-material/Edit'
 import CheckCircleIcon from '@mui/icons-material/CheckCircle'
 import { Box, Checkbox, IconButton, Paper, Typography } from '@mui/material'
 
-import type { Horse } from '@/domain/horse.domain'
 import type { HorseEvent } from '@/domain/horse-event.domain'
 
+import { horseEventsStore } from '@/stores'
+
 import './horse-event-item.css'
-
-import { publicUrl } from '@/common/helpers/publicUrl'
-import { horseEventsStore, horsesStore } from '@/stores'
-
+import horseIcon from '../../../../assets/horse.png'
 import { EditEventDialog } from '../../tasks/edit-event-dialog'
 
 interface HorseEventItemProps {
@@ -20,10 +18,8 @@ interface HorseEventItemProps {
 
 export const HorseEventItem = observer(({ event }: HorseEventItemProps) => {
   const { toggleEventCompleted } = horseEventsStore
-  const { horses } = horsesStore
   const [isEditOpen, setIsEditOpen] = useState(false)
 
-  const horse = horses.find(h => h.id === event.horseId) || { name: 'Лис', id: 1 } as Horse
   const getEventTypeText = (type: string): string => {
     switch (type) {
       case 'collect': return 'Собрать'
@@ -43,15 +39,6 @@ export const HorseEventItem = observer(({ event }: HorseEventItemProps) => {
 
   const handleCloseEdit = () => {
     setIsEditOpen(false)
-  }
-
-  // Get a consistent horse icon based on the horse ID
-  const getHorseIcon = () => {
-    const index = typeof horse.id === 'number'
-      ? (horse.id % 3) + 1
-      : Number.parseInt(String(horse.id).substr(-1), 10) % 3 + 1
-
-    return publicUrl(`assets/png2svg/horse${index}.svg`)
   }
 
   return (
@@ -75,12 +62,12 @@ export const HorseEventItem = observer(({ event }: HorseEventItemProps) => {
         }}
         >
           <img
-            src={getHorseIcon()}
-            alt={horse.name}
+            src={horseIcon}
+            alt={event.horse.name}
             style={{ width: 40, height: 40 }}
           />
           <Typography variant="body2" sx={{ mt: 0.5 }}>
-            {horse.name}
+            {event.horse.name}
           </Typography>
         </Box>
 

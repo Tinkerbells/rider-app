@@ -59,24 +59,28 @@ export const AddEventDialog: FC<AddEventDialogProps> = ({ open, onClose }) => {
 
   const watchEventType = watch('eventType')
 
-  const onSubmit = async (data: EventFormData) => {
+  const onSubmit = (data: EventFormData) => {
     if (!data.time)
       return
 
-    const timeString = format(data.time, 'HH:mm')
-    const newEvent: HorseEvent = {
-      id: Date.now().toString(),
-      horseId: data.horseId,
-      type: data.eventType,
-      name: data.name && data.eventType === HorseEventType.CUSTOM ? data.name : undefined,
-      time: timeString,
-      date: selectedDate,
-      completed: false,
-    }
+    const horse = horses.find(h => h.id === data.horseId)
 
-    await addEvent(newEvent)
-    reset()
-    onClose()
+    if (horse) {
+      const timeString = format(data.time, 'HH:mm')
+      const newEvent: HorseEvent = {
+        id: Date.now().toString(),
+        horse,
+        type: data.eventType,
+        name: data.name && data.eventType === HorseEventType.CUSTOM ? data.name : undefined,
+        time: timeString,
+        date: selectedDate,
+        completed: false,
+      }
+
+      addEvent(newEvent)
+      reset()
+      onClose()
+    }
   }
 
   const handleCancel = () => {
@@ -123,17 +127,12 @@ export const AddEventDialog: FC<AddEventDialogProps> = ({ open, onClose }) => {
                     {...field}
                     label="Лошадь"
                   >
-                    {horses.length > 0
-                      ? (
-                          horses.map(horse => (
-                            <MenuItem key={horse.id} value={horse.id}>
-                              {horse.name}
-                            </MenuItem>
-                          ))
-                        )
-                      : (
-                          <MenuItem value={1}>Лис</MenuItem>
-                        )}
+                    {horses
+                      && horses.map(horse => (
+                        <MenuItem key={horse.id} value={horse.id}>
+                          {horse.name}
+                        </MenuItem>
+                      ))}
                   </Select>
                   {errors.horseId && (
                     <FormHelperText>{errors.horseId.message}</FormHelperText>

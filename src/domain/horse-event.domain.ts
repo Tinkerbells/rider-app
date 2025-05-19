@@ -1,6 +1,6 @@
 import type { Horse } from './horse.domain'
 
-export enum HorseEventType {
+export enum HorseEventTasks {
   COLLECT = 'collect', // собрать
   DISASSEMBLE = 'disassemble', // разобрать
   WALK = 'walk', // выгулить
@@ -9,8 +9,8 @@ export enum HorseEventType {
 
 export interface HorseEvent {
   id: string | number
-  horseId: Horse['id']
-  type: HorseEventType
+  horse: Horse
+  tasks: HorseEventTasks[]
   name?: string
   time: string
   date: string

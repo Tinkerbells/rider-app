@@ -13,7 +13,7 @@ import { horseEventsStore } from '@/stores'
 import { Page } from '../core/page'
 import { AddEventDialog, HorseEventItem } from './horse-event'
 
-export const HomePage: FC = observer(() => {
+export const SchedulePage: FC = observer(() => {
   const { eventsByTime, selectedDate } = horseEventsStore
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
 

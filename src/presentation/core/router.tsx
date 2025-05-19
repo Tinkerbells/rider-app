@@ -1,9 +1,9 @@
 import { createHashRouter, Outlet, RouterProvider } from 'react-router'
 
 import { NavigationMenu } from '../ui'
-import { homePageRoute } from '../home/home.route'
 import { tasksPageRoute } from '../tasks/tasks.route'
 import { horsesPageRoute } from '../horses/horses.route'
+import { schedulePageRoute } from '../schedule/schedule.route'
 
 function MainLayout() {
   return (
@@ -19,7 +19,7 @@ const browserRouter = createHashRouter([
     path: '/',
     element: <MainLayout />,
     children: [
-      homePageRoute,
+      schedulePageRoute,
       horsesPageRoute,
       tasksPageRoute,
     ],

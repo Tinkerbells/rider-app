@@ -12,7 +12,7 @@ interface EventsStorage {
 }
 
 export class HorsesEventsService implements IHorsesEventsRepository {
-  private readonly EVENTS_KEY: string = 'horseEvents'
+  private readonly EVENTS_KEY: string = 'events'
   storage: IStorage = new LocalStorageService()
 
   private getEvents(): HorseEvent[] {
@@ -37,7 +37,7 @@ export class HorsesEventsService implements IHorsesEventsRepository {
 
   findByHorse(horseId: Horse['id']) {
     const events = this.getEvents()
-    const filteredEvents = events.filter(event => event.horseId === horseId)
+    const filteredEvents = events.filter(event => event.horse.id === horseId)
     return returnAfterDelay(filteredEvents)
   }
 

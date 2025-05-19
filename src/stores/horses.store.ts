@@ -56,6 +56,10 @@ class HorsesStore {
     return this.horsesQuery.result.data || []
   }
 
+  findById(id: Horse['id']): Horse {
+    return this.horsesQuery.result.data 
+  }
+
   get loading(): boolean {
     return (
       this.horsesQuery.result.isLoading

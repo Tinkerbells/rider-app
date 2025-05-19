@@ -8,8 +8,8 @@ import { root } from '@/config/navigation/routes.ts'
 
 import { compose, ErrorHandler, logError, withSuspense } from '../core/react'
 
-const HomePage = lazy(() =>
-  import('./home.page.tsx').then(module => ({ default: module.HomePage })),
+const SchedulePage = lazy(() =>
+  import('./schedule.page.tsx').then(module => ({ default: module.SchedulePage })),
 )
 
 const enhance = compose(
@@ -21,7 +21,7 @@ const enhance = compose(
     }),
 )
 
-export const homePageRoute: RouteObject = {
+export const schedulePageRoute: RouteObject = {
   path: root.$path(),
-  element: createElement(enhance(HomePage)),
+  element: createElement(enhance(SchedulePage)),
 }
