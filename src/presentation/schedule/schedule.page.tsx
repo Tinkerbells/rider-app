@@ -17,7 +17,6 @@ export const SchedulePage: FC = observer(() => {
   const { eventsByTime, selectedDate } = horseEventsStore
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
 
-  // Format the date for display (e.g., "Смена 19.05")
   const formattedDate = format(new Date(selectedDate), '\'Смена\' dd.MM', { locale: ru })
 
   const handleOpenAddDialog = () => {
@@ -32,16 +31,11 @@ export const SchedulePage: FC = observer(() => {
     <Page back={false}>
       <Container maxWidth="sm" sx={{ py: 2, height: 'calc(100vh - 56px)', display: 'flex', flexDirection: 'column' }}>
         <Paper elevation={0} sx={{ p: 2, mb: 2, borderRadius: 4 }}>
-          <Typography variant="h5" component="h1" fontWeight="bold" align="center" sx={{ mb: 1 }}>
-            {formattedDate}
-          </Typography>
-
-          {/* <DateSelector */}
-          {/*   currentDate={selectedDate} */}
-          {/*   onPrevDay={handlePrevDay} */}
-          {/*   onNextDay={handleNextDay} */}
-          {/*   onSelectDate={setSelectedDate} */}
-          {/* /> */}
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <Typography variant="h5" component="h1" fontWeight="bold" align="center">
+              {formattedDate}
+            </Typography>
+          </Box>
         </Paper>
 
         <Box sx={{ flex: 1, overflow: 'auto', mb: 2, px: 1 }}>
@@ -49,7 +43,7 @@ export const SchedulePage: FC = observer(() => {
             ? (
                 eventsByTime.map(({ time, events }) => (
                   <Box key={time} sx={{ mb: 3 }}>
-                    <Typography variant="h6" fontWeight="bold" sx={{ mb: 1 }}>
+                    <Typography color="text.primary" variant="h6" fontWeight="bold" sx={{ mb: 1 }}>
                       {time}
                     </Typography>
                     {events.map(event => (

@@ -2,11 +2,12 @@ import { useState } from 'react'
 import { observer } from 'mobx-react-lite'
 import EditIcon from '@mui/icons-material/Edit'
 import CheckCircleIcon from '@mui/icons-material/CheckCircle'
-import { Box, Checkbox, IconButton, Paper, Typography } from '@mui/material'
+import { Box, Checkbox, Chip, IconButton, Paper, Typography } from '@mui/material'
 
 import type { HorseEvent } from '@/domain/horse-event.domain'
 
 import { horseEventsStore } from '@/stores'
+import { HorseEventTasks } from '@/domain/horse-event.domain'
 
 import './horse-event-item.css'
 import horseIcon from '../../../../assets/horse.png'
@@ -20,12 +21,13 @@ export const HorseEventItem = observer(({ event }: HorseEventItemProps) => {
   const { toggleEventCompleted } = horseEventsStore
   const [isEditOpen, setIsEditOpen] = useState(false)
 
-  const getEventTypeText = (type: string): string => {
-    switch (type) {
-      case 'collect': return 'Собрать'
-      case 'disassemble': return 'Разобрать'
-      case 'walk': return 'Выгулить'
-      default: return event.name || type
+  const getTaskText = (task: HorseEventTasks): string => {
+    switch (task) {
+      case HorseEventTasks.COLLECT: return 'Собрать'
+      case HorseEventTasks.DISASSEMBLE: return 'Разобрать'
+      case HorseEventTasks.WALK: return 'Выгулить'
+      case HorseEventTasks.CUSTOM: return event.name || 'Другое'
+      default: return task
     }
   }
 
@@ -71,9 +73,17 @@ export const HorseEventItem = observer(({ event }: HorseEventItemProps) => {
           </Typography>
         </Box>
 
-        <Typography variant="body1" sx={{ flex: 1, ml: 2, fontWeight: 500 }}>
-          {getEventTypeText(event.type)}
-        </Typography>
+        <Box sx={{ flex: 1, ml: 2 }}>
+          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+            {event.tasks.map((task, index) => (
+              <Chip
+                key={index}
+                label={getTaskText(task)}
+                size="small"
+              />
+            ))}
+          </Box>
+        </Box>
 
         <Box sx={{ display: 'flex', alignItems: 'center' }}>
           <IconButton size="small" onClick={handleOpenEdit} sx={{ mr: 1 }}>

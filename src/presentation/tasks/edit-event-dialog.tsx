@@ -1,4 +1,7 @@
 import type { FC } from 'react'
+import type {
+  SelectChangeEvent,
+} from '@mui/material'
 
 import { ru } from 'date-fns/locale'
 import { format, parse } from 'date-fns'
@@ -11,6 +14,7 @@ import {
   Box,
   Button,
   Checkbox,
+  Chip,
   Dialog,
   DialogActions,
   DialogContent,
@@ -20,14 +24,16 @@ import {
   FormHelperText,
   InputLabel,
   MenuItem,
+  OutlinedInput,
   Select,
   TextField,
 } from '@mui/material'
 
+import type { Horse } from '@/domain/horse.domain'
 import type { HorseEvent } from '@/domain/horse-event.domain'
 
 import { horseEventsStore, horsesStore } from '@/stores'
-import { HorseEventType } from '@/domain/horse-event.domain'
+import { HorseEventTasks } from '@/domain/horse-event.domain'
 
 interface EditEventDialogProps {
   open: boolean
@@ -38,8 +44,8 @@ interface EditEventDialogProps {
 interface EventFormData {
   time: Date | null
   date: Date | null
-  horseId: string | number
-  eventType: HorseEventType
+  horse: Horse
+  tasks: HorseEventTasks[] // Теперь массив задач
   name?: string
   completed: boolean
 }
@@ -53,29 +59,30 @@ export const EditEventDialog: FC<EditEventDialogProps> = ({ open, onClose, event
     handleSubmit,
     reset,
     watch,
+    setValue,
     formState: { errors },
   } = useForm<EventFormData>({
     defaultValues: event
       ? {
           time: event.time ? parse(event.time, 'HH:mm', new Date()) : new Date(),
           date: event.date ? new Date(event.date) : new Date(),
-          horseId: event.horseId,
-          eventType: event.type as HorseEventType,
+          horse: event.horse,
+          tasks: event.tasks,
           name: event.name || '',
           completed: event.completed,
         }
       : {
           time: new Date(),
           date: new Date(),
-          horseId: '',
-          eventType: HorseEventType.COLLECT,
+          horse: horses[0],
+          tasks: [HorseEventTasks.COLLECT],
           name: '',
           completed: false,
         },
   })
 
-  // Watch the event type to conditionally render the name field
-  const watchEventType = watch('eventType')
+  const watchTasks = watch('tasks')
+  const hasCustomTask = watchTasks && watchTasks.includes(HorseEventTasks.CUSTOM)
 
   const onSubmit = (data: EventFormData) => {
     if (!event || !data.time || !data.date)
@@ -85,9 +92,9 @@ export const EditEventDialog: FC<EditEventDialogProps> = ({ open, onClose, event
     const dateString = format(data.date, 'yyyy-MM-dd')
 
     const updatedEvent: Partial<HorseEvent> = {
-      horseId: data.horseId,
-      type: data.eventType,
-      name: data.eventType === HorseEventType.CUSTOM ? data.name : undefined,
+      horse: data.horse,
+      tasks: data.tasks,
+      name: hasCustomTask ? data.name : undefined,
       time: timeString,
       date: dateString,
       completed: data.completed,
@@ -100,6 +107,16 @@ export const EditEventDialog: FC<EditEventDialogProps> = ({ open, onClose, event
   const handleCancel = () => {
     reset()
     onClose()
+  }
+
+  const handleTasksChange = (event: SelectChangeEvent<HorseEventTasks[]>) => {
+    const value = event.target.value as HorseEventTasks[]
+    setValue('tasks', value)
+
+    // Если убрали Custom из списка, очищаем имя
+    if (!value.includes(HorseEventTasks.CUSTOM)) {
+      setValue('name', '')
+    }
   }
 
   if (!event)
@@ -154,11 +171,11 @@ export const EditEventDialog: FC<EditEventDialogProps> = ({ open, onClose, event
             </LocalizationProvider>
 
             <Controller
-              name="horseId"
+              name="horse"
               control={control}
               rules={{ required: 'Выберите лошадь' }}
               render={({ field }) => (
-                <FormControl fullWidth error={!!errors.horseId}>
+                <FormControl fullWidth error={!!errors.horse}>
                   <InputLabel>Лошадь</InputLabel>
                   <Select
                     {...field}
@@ -171,47 +188,71 @@ export const EditEventDialog: FC<EditEventDialogProps> = ({ open, onClose, event
                         </MenuItem>
                       ))}
                   </Select>
-                  {errors.horseId && (
-                    <FormHelperText>{errors.horseId.message}</FormHelperText>
+                  {errors.horse && (
+                    <FormHelperText>{errors.horse.message}</FormHelperText>
                   )}
                 </FormControl>
               )}
             />
 
             <Controller
-              name="eventType"
+              name="tasks"
               control={control}
-              rules={{ required: 'Выберите тип действия' }}
+              rules={{
+                required: 'Выберите хотя бы одну задачу',
+                validate: value => value.length > 0 || 'Выберите хотя бы одну задачу',
+              }}
               render={({ field }) => (
-                <FormControl fullWidth error={!!errors.eventType}>
-                  <InputLabel>Тип действия</InputLabel>
+                <FormControl fullWidth error={!!errors.tasks}>
+                  <InputLabel>Задачи</InputLabel>
                   <Select
                     {...field}
-                    label="Тип действия"
+                    multiple
+                    value={field.value}
+                    onChange={handleTasksChange}
+                    input={<OutlinedInput label="Задачи" />}
+                    renderValue={selected => (
+                      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                        {selected.map(value => (
+                          <Chip
+                            key={value}
+                            label={
+                              value === HorseEventTasks.COLLECT
+                                ? 'Собрать'
+                                : value === HorseEventTasks.DISASSEMBLE
+                                  ? 'Разобрать'
+                                  : value === HorseEventTasks.WALK
+                                    ? 'Выгулить'
+                                    : value === HorseEventTasks.CUSTOM ? 'Другое' : value
+                            }
+                          />
+                        ))}
+                      </Box>
+                    )}
                   >
-                    <MenuItem value={HorseEventType.COLLECT}>Собрать</MenuItem>
-                    <MenuItem value={HorseEventType.DISASSEMBLE}>Разобрать</MenuItem>
-                    <MenuItem value={HorseEventType.WALK}>Выгулить</MenuItem>
-                    <MenuItem value={HorseEventType.CUSTOM}>Другое</MenuItem>
+                    <MenuItem value={HorseEventTasks.COLLECT}>Собрать</MenuItem>
+                    <MenuItem value={HorseEventTasks.DISASSEMBLE}>Разобрать</MenuItem>
+                    <MenuItem value={HorseEventTasks.WALK}>Выгулить</MenuItem>
+                    <MenuItem value={HorseEventTasks.CUSTOM}>Другое</MenuItem>
                   </Select>
-                  {errors.eventType && (
-                    <FormHelperText>{errors.eventType.message}</FormHelperText>
+                  {errors.tasks && (
+                    <FormHelperText>{errors.tasks.message}</FormHelperText>
                   )}
                 </FormControl>
               )}
             />
 
-            {watchEventType === HorseEventType.CUSTOM && (
+            {hasCustomTask && (
               <Controller
                 name="name"
                 control={control}
                 rules={{
-                  required: watchEventType === HorseEventType.CUSTOM ? 'Введите название' : false,
+                  required: hasCustomTask ? 'Введите название пользовательской задачи' : false,
                 }}
                 render={({ field }) => (
                   <TextField
                     {...field}
-                    label="Название"
+                    label="Название пользовательской задачи"
                     fullWidth
                     error={!!errors.name}
                     helperText={errors.name?.message}

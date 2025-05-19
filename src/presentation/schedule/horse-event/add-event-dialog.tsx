@@ -1,4 +1,7 @@
 import type { FC } from 'react'
+import type {
+  SelectChangeEvent,
+} from '@mui/material'
 
 import { format } from 'date-fns'
 import { ru } from 'date-fns/locale'
@@ -9,6 +12,7 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider'
 import {
   Box,
   Button,
+  Chip,
   Dialog,
   DialogActions,
   DialogContent,
@@ -17,6 +21,7 @@ import {
   FormHelperText,
   InputLabel,
   MenuItem,
+  OutlinedInput,
   Select,
   TextField,
 } from '@mui/material'
@@ -24,7 +29,7 @@ import {
 import type { HorseEvent } from '@/domain/horse-event.domain'
 
 import { horseEventsStore, horsesStore } from '@/stores'
-import { HorseEventType } from '@/domain/horse-event.domain'
+import { HorseEventTasks } from '@/domain/horse-event.domain'
 
 interface AddEventDialogProps {
   open: boolean
@@ -34,7 +39,7 @@ interface AddEventDialogProps {
 interface EventFormData {
   time: Date | null
   horseId: string | number
-  eventType: HorseEventType
+  tasks: HorseEventTasks[] // Изменено с eventType на tasks (массив)
   name?: string
 }
 
@@ -47,32 +52,36 @@ export const AddEventDialog: FC<AddEventDialogProps> = ({ open, onClose }) => {
     handleSubmit,
     reset,
     watch,
+    setValue,
     formState: { errors },
   } = useForm<EventFormData>({
     defaultValues: {
       time: new Date(),
       horseId: '',
-      eventType: HorseEventType.COLLECT,
+      tasks: [HorseEventTasks.COLLECT], // По умолчанию одна задача
       name: '',
     },
   })
 
-  const watchEventType = watch('eventType')
+  const watchTasks = watch('tasks')
+  const hasCustomTask = watchTasks.includes(HorseEventTasks.CUSTOM)
 
   const onSubmit = (data: EventFormData) => {
+    const horse = horses.find(h => h.id === data.horseId)
     if (!data.time)
       return
 
-    const horse = horses.find(h => h.id === data.horseId)
-
+    if (data.tasks.length === 0) {
+      // Должна быть хотя бы одна задача
+      return
+    }
     if (horse) {
-      const timeString = format(data.time, 'HH:mm')
       const newEvent: HorseEvent = {
         id: Date.now().toString(),
         horse,
-        type: data.eventType,
-        name: data.name && data.eventType === HorseEventType.CUSTOM ? data.name : undefined,
-        time: timeString,
+        tasks: data.tasks,
+        name: hasCustomTask ? data.name : undefined,
+        time: format(data.time, 'HH:mm'),
         date: selectedDate,
         completed: false,
       }
@@ -86,6 +95,16 @@ export const AddEventDialog: FC<AddEventDialogProps> = ({ open, onClose }) => {
   const handleCancel = () => {
     reset()
     onClose()
+  }
+
+  const handleTasksChange = (event: SelectChangeEvent<HorseEventTasks[]>) => {
+    const value = event.target.value as HorseEventTasks[]
+    setValue('tasks', value)
+
+    // Если убрали Custom из списка, очищаем имя
+    if (!value.includes(HorseEventTasks.CUSTOM)) {
+      setValue('name', '')
+    }
   }
 
   return (
@@ -142,39 +161,63 @@ export const AddEventDialog: FC<AddEventDialogProps> = ({ open, onClose }) => {
             />
 
             <Controller
-              name="eventType"
+              name="tasks"
               control={control}
-              rules={{ required: 'Выберите тип действия' }}
+              rules={{
+                required: 'Выберите хотя бы одну задачу',
+                validate: value => value.length > 0 || 'Выберите хотя бы одну задачу',
+              }}
               render={({ field }) => (
-                <FormControl fullWidth error={!!errors.eventType}>
-                  <InputLabel>Тип действия</InputLabel>
+                <FormControl fullWidth error={!!errors.tasks}>
+                  <InputLabel>Задачи</InputLabel>
                   <Select
                     {...field}
-                    label="Тип действия"
+                    multiple
+                    value={field.value}
+                    onChange={handleTasksChange}
+                    input={<OutlinedInput label="Задачи" />}
+                    renderValue={selected => (
+                      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                        {selected.map(value => (
+                          <Chip
+                            key={value}
+                            label={
+                              value === HorseEventTasks.COLLECT
+                                ? 'Собрать'
+                                : value === HorseEventTasks.DISASSEMBLE
+                                  ? 'Разобрать'
+                                  : value === HorseEventTasks.WALK
+                                    ? 'Выгулить'
+                                    : value === HorseEventTasks.CUSTOM ? 'Другое' : value
+                            }
+                          />
+                        ))}
+                      </Box>
+                    )}
                   >
-                    <MenuItem value={HorseEventType.COLLECT}>Собрать</MenuItem>
-                    <MenuItem value={HorseEventType.DISASSEMBLE}>Разобрать</MenuItem>
-                    <MenuItem value={HorseEventType.WALK}>Выгулить</MenuItem>
-                    <MenuItem value={HorseEventType.CUSTOM}>Другое</MenuItem>
+                    <MenuItem value={HorseEventTasks.COLLECT}>Собрать</MenuItem>
+                    <MenuItem value={HorseEventTasks.DISASSEMBLE}>Разобрать</MenuItem>
+                    <MenuItem value={HorseEventTasks.WALK}>Выгулить</MenuItem>
+                    <MenuItem value={HorseEventTasks.CUSTOM}>Другое</MenuItem>
                   </Select>
-                  {errors.eventType && (
-                    <FormHelperText>{errors.eventType.message}</FormHelperText>
+                  {errors.tasks && (
+                    <FormHelperText>{errors.tasks.message}</FormHelperText>
                   )}
                 </FormControl>
               )}
             />
 
-            {watchEventType === HorseEventType.CUSTOM && (
+            {hasCustomTask && (
               <Controller
                 name="name"
                 control={control}
                 rules={{
-                  required: watchEventType === HorseEventType.CUSTOM ? 'Введите название' : false,
+                  required: hasCustomTask ? 'Введите название пользовательской задачи' : false,
                 }}
                 render={({ field }) => (
                   <TextField
                     {...field}
-                    label="Название"
+                    label="Название пользовательской задачи"
                     fullWidth
                     error={!!errors.name}
                     helperText={errors.name?.message}
