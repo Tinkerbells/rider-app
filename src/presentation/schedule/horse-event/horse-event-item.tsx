@@ -6,8 +6,7 @@ import { Box, Checkbox, Chip, IconButton, Paper, Typography } from '@mui/materia
 
 import type { HorseEvent } from '@/domain/horse-event.domain'
 
-import { horseEventsStore } from '@/stores'
-import { HorseEventTasks } from '@/domain/horse-event.domain'
+import { horseEventsStore, horsesStore, tasksStore } from '@/stores'
 
 import './horse-event-item.css'
 import horseIcon from '../../../../assets/horse.png'
@@ -19,17 +18,14 @@ interface HorseEventItemProps {
 
 export const HorseEventItem = observer(({ event }: HorseEventItemProps) => {
   const { toggleEventCompleted } = horseEventsStore
+  const { horses } = horsesStore
+  const { tasks } = tasksStore
   const [isEditOpen, setIsEditOpen] = useState(false)
 
-  const getTaskText = (task: HorseEventTasks): string => {
-    switch (task) {
-      case HorseEventTasks.COLLECT: return 'Собрать'
-      case HorseEventTasks.DISASSEMBLE: return 'Разобрать'
-      case HorseEventTasks.WALK: return 'Выгулить'
-      case HorseEventTasks.CUSTOM: return event.name || 'Другое'
-      default: return task
-    }
-  }
+  // Находим объект лошади по ID
+  const horse = horses.find(h => h.id === event.horse)
+  // Находим объекты задач по их ID
+  const eventTasks = tasks.filter(task => event.tasks.includes(task.id))
 
   const handleToggleComplete = () => {
     toggleEventCompleted(event.id)
@@ -42,6 +38,9 @@ export const HorseEventItem = observer(({ event }: HorseEventItemProps) => {
   const handleCloseEdit = () => {
     setIsEditOpen(false)
   }
+
+  if (!horse)
+    return null // Если лошадь не найдена, не отображаем событие
 
   return (
     <>
@@ -65,23 +64,34 @@ export const HorseEventItem = observer(({ event }: HorseEventItemProps) => {
         >
           <img
             src={horseIcon}
-            alt={event.horse.name}
+            alt={horse.name}
             style={{ width: 40, height: 40 }}
           />
           <Typography variant="body2" sx={{ mt: 0.5 }}>
-            {event.horse.name}
+            {horse.name}
           </Typography>
         </Box>
 
         <Box sx={{ flex: 1, ml: 2 }}>
           <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-            {event.tasks.map((task, index) => (
+            {eventTasks.map(task => (
               <Chip
-                key={index}
-                label={getTaskText(task)}
+                key={task.id}
+                label={task.title}
                 size="small"
+                sx={{
+                  backgroundColor: task.color,
+                  color: task.color ? '#fff' : undefined,
+                }}
               />
             ))}
+            {event.name && (
+              <Chip
+                label={event.name}
+                size="small"
+                variant="outlined"
+              />
+            )}
           </Box>
         </Box>
 

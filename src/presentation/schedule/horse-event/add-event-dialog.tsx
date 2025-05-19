@@ -28,8 +28,7 @@ import {
 
 import type { HorseEvent } from '@/domain/horse-event.domain'
 
-import { horseEventsStore, horsesStore } from '@/stores'
-import { HorseEventTasks } from '@/domain/horse-event.domain'
+import { horseEventsStore, horsesStore, tasksStore } from '@/stores'
 
 interface AddEventDialogProps {
   open: boolean
@@ -39,12 +38,13 @@ interface AddEventDialogProps {
 interface EventFormData {
   time: Date | null
   horseId: string | number
-  tasks: HorseEventTasks[] // Изменено с eventType на tasks (массив)
+  taskIds: string[]
   name?: string
 }
 
 export const AddEventDialog: FC<AddEventDialogProps> = ({ open, onClose }) => {
   const { horses } = horsesStore
+  const { tasks } = tasksStore
   const { selectedDate, addEvent } = horseEventsStore
 
   const {
@@ -58,38 +58,37 @@ export const AddEventDialog: FC<AddEventDialogProps> = ({ open, onClose }) => {
     defaultValues: {
       time: new Date(),
       horseId: '',
-      tasks: [HorseEventTasks.COLLECT], // По умолчанию одна задача
+      taskIds: [],
       name: '',
     },
   })
 
-  const watchTasks = watch('tasks')
-  const hasCustomTask = watchTasks.includes(HorseEventTasks.CUSTOM)
+  const watchTaskIds = watch('taskIds')
+  // Предполагаем, что у нас есть специальная задача с ID custom, требующая названия
+  const hasCustomTask = watchTaskIds.includes('custom')
 
   const onSubmit = (data: EventFormData) => {
-    const horse = horses.find(h => h.id === data.horseId)
-    if (!data.time)
+    if (!data.time || !data.horseId)
       return
 
-    if (data.tasks.length === 0) {
+    if (data.taskIds.length === 0) {
       // Должна быть хотя бы одна задача
       return
     }
-    if (horse) {
-      const newEvent: HorseEvent = {
-        id: Date.now().toString(),
-        horse,
-        tasks: data.tasks,
-        name: hasCustomTask ? data.name : undefined,
-        time: format(data.time, 'HH:mm'),
-        date: selectedDate,
-        completed: false,
-      }
 
-      addEvent(newEvent)
-      reset()
-      onClose()
+    const newEvent: HorseEvent = {
+      id: Date.now().toString(),
+      horse: data.horseId,
+      tasks: data.taskIds,
+      name: hasCustomTask ? data.name : undefined,
+      time: format(data.time, 'HH:mm'),
+      date: selectedDate,
+      completed: false,
     }
+
+    addEvent(newEvent)
+    reset()
+    onClose()
   }
 
   const handleCancel = () => {
@@ -97,12 +96,12 @@ export const AddEventDialog: FC<AddEventDialogProps> = ({ open, onClose }) => {
     onClose()
   }
 
-  const handleTasksChange = (event: SelectChangeEvent<HorseEventTasks[]>) => {
-    const value = event.target.value as HorseEventTasks[]
-    setValue('tasks', value)
+  const handleTasksChange = (event: SelectChangeEvent<string[]>) => {
+    const value = event.target.value as string[]
+    setValue('taskIds', value)
 
     // Если убрали Custom из списка, очищаем имя
-    if (!value.includes(HorseEventTasks.CUSTOM)) {
+    if (!value.includes('custom')) {
       setValue('name', '')
     }
   }
@@ -146,12 +145,11 @@ export const AddEventDialog: FC<AddEventDialogProps> = ({ open, onClose }) => {
                     {...field}
                     label="Лошадь"
                   >
-                    {horses
-                      && horses.map(horse => (
-                        <MenuItem key={horse.id} value={horse.id}>
-                          {horse.name}
-                        </MenuItem>
-                      ))}
+                    {horses.map(horse => (
+                      <MenuItem key={horse.id} value={horse.id}>
+                        {horse.name}
+                      </MenuItem>
+                    ))}
                   </Select>
                   {errors.horseId && (
                     <FormHelperText>{errors.horseId.message}</FormHelperText>
@@ -161,14 +159,14 @@ export const AddEventDialog: FC<AddEventDialogProps> = ({ open, onClose }) => {
             />
 
             <Controller
-              name="tasks"
+              name="taskIds"
               control={control}
               rules={{
                 required: 'Выберите хотя бы одну задачу',
                 validate: value => value.length > 0 || 'Выберите хотя бы одну задачу',
               }}
               render={({ field }) => (
-                <FormControl fullWidth error={!!errors.tasks}>
+                <FormControl fullWidth error={!!errors.taskIds}>
                   <InputLabel>Задачи</InputLabel>
                   <Select
                     {...field}
@@ -178,30 +176,42 @@ export const AddEventDialog: FC<AddEventDialogProps> = ({ open, onClose }) => {
                     input={<OutlinedInput label="Задачи" />}
                     renderValue={selected => (
                       <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                        {selected.map(value => (
-                          <Chip
-                            key={value}
-                            label={
-                              value === HorseEventTasks.COLLECT
-                                ? 'Собрать'
-                                : value === HorseEventTasks.DISASSEMBLE
-                                  ? 'Разобрать'
-                                  : value === HorseEventTasks.WALK
-                                    ? 'Выгулить'
-                                    : value === HorseEventTasks.CUSTOM ? 'Другое' : value
-                            }
-                          />
-                        ))}
+                        {selected.map((taskId) => {
+                          const task = tasks.find(t => t.id === taskId)
+                          return (
+                            <Chip
+                              key={taskId}
+                              label={task ? task.title : taskId}
+                              sx={{
+                                backgroundColor: task?.color,
+                                color: task?.color ? '#fff' : undefined,
+                              }}
+                            />
+                          )
+                        })}
                       </Box>
                     )}
                   >
-                    <MenuItem value={HorseEventTasks.COLLECT}>Собрать</MenuItem>
-                    <MenuItem value={HorseEventTasks.DISASSEMBLE}>Разобрать</MenuItem>
-                    <MenuItem value={HorseEventTasks.WALK}>Выгулить</MenuItem>
-                    <MenuItem value={HorseEventTasks.CUSTOM}>Другое</MenuItem>
+                    {tasks.map(task => (
+                      <MenuItem key={task.id} value={task.id}>
+                        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                          <Box
+                            sx={{
+                              width: 16,
+                              height: 16,
+                              borderRadius: '50%',
+                              backgroundColor: task.color || 'transparent',
+                              mr: 1,
+                              border: theme => `1px solid ${theme.palette.divider}`,
+                            }}
+                          />
+                          {task.title}
+                        </Box>
+                      </MenuItem>
+                    ))}
                   </Select>
-                  {errors.tasks && (
-                    <FormHelperText>{errors.tasks.message}</FormHelperText>
+                  {errors.taskIds && (
+                    <FormHelperText>{errors.taskIds.message}</FormHelperText>
                   )}
                 </FormControl>
               )}
