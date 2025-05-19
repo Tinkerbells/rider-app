@@ -6,6 +6,8 @@ import { BottomNavigation, BottomNavigationAction } from '@mui/material'
 
 import { root } from '@/config/navigation/routes'
 
+import { HorseIcon } from './horse-icon'
+
 export function NavigationMenu() {
   const navigate = useNavigate()
   const { pathname } = useLocation()
@@ -22,7 +24,7 @@ export function NavigationMenu() {
       onChange={handleChange}
     >
       <BottomNavigationAction value={root.$path()} label="Расписание" icon={<CalendarMonthIcon />} />
-      <BottomNavigationAction value={root.horses.$path()} label="Лошадки" icon={<TaskAltIcon />} />
+      <BottomNavigationAction value={root.horses.$path()} label="Лошадки" icon={<HorseIcon />} />
       <BottomNavigationAction value={root.tasks.$path()} label="Задачи" icon={<TaskAltIcon />} />
     </BottomNavigation>
   )
