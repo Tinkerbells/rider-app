@@ -3,7 +3,7 @@
   "type": "module",
   "version": "0.0.1",
   "private": true,
-  "homepage": "https://telegram-mini-apps.github.io/reactjs-template",
+  "homepage": "https://tinkerbells.github.io/rider-app",
   "scripts": {
     "deploy": "gh-pages -d dist",
     "dev": "vite",
@@ -52,7 +52,7 @@
     "eslint": "^9.27.0",
     "eslint-plugin-react": "^7.37.4",
     "eslint-plugin-react-hooks": "^5.2.0",
-    "gh-pages": "^6.1.1",
+    "gh-pages": "^6.3.0",
     "globals": "^15.2.0",
     "typescript": "^5.8.2",
     "typescript-eslint": "^8.28.0",

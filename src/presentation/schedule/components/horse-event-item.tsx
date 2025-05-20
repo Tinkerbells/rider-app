@@ -19,6 +19,7 @@ interface HorseEventItemProps {
   toggleEvent: (id: HorseEvent['id']) => void
   allTasks: Task[]
   horse: NullableType<Horse>
+  // Меняем тип handleOpenEdit на функцию без параметров
   handleOpenEdit: () => void
 }
 

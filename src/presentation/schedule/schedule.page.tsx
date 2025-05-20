@@ -17,6 +17,8 @@ import {
   Typography,
 } from '@mui/material'
 
+import type { HorseEvent } from '@/domain/horse-event.domain'
+
 import { HorseEventsContoller, HorsesController, TasksController } from '@/controllers'
 
 import { Page } from '../core/page'
@@ -40,7 +42,8 @@ export const SchedulePage: FC = observer(() => {
   const { tasks } = TasksController
 
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
+  // Изменяем подход к отслеживанию редактируемого события
+  const [editingEvent, setEditingEvent] = useState<HorseEvent | null>(null)
 
   const formattedDate = format(new Date(selectedDate), '\'Смена\' dd.MM', { locale: ru })
 
@@ -52,12 +55,13 @@ export const SchedulePage: FC = observer(() => {
     setIsAddDialogOpen(false)
   }
 
-  const handleOpenEditDialog = () => {
-    setIsEditDialogOpen(true)
+  // Изменяем функцию открытия диалога редактирования, чтобы принимать конкретное событие
+  const handleOpenEditDialog = (event: HorseEvent) => {
+    setEditingEvent(event)
   }
 
   const handleCloseEditDialog = () => {
-    setIsEditDialogOpen(false)
+    setEditingEvent(null)
   }
 
   return (
@@ -93,8 +97,14 @@ export const SchedulePage: FC = observer(() => {
                     </Typography>
                     {events.map(event => (
                       <Fragment key={event.id}>
-                        <HorseEventItem handleOpenEdit={handleOpenEditDialog} allTasks={tasks} horse={findOneById(event.horseId)} toggleEvent={toggleEventCompleted} event={event} />
-                        <EditEventDialog loading={loading} horses={horses} tasks={tasks} open={isEditDialogOpen} onClose={handleCloseEditDialog} event={event} updateEvent={updateEvent} />
+                        <HorseEventItem
+                          // Передаем событие при открытии диалога редактирования
+                          handleOpenEdit={() => handleOpenEditDialog(event)}
+                          allTasks={tasks}
+                          horse={findOneById(event.horseId)}
+                          toggleEvent={toggleEventCompleted}
+                          event={event}
+                        />
                       </Fragment>
                     ))}
                   </Box>
@@ -138,7 +148,28 @@ export const SchedulePage: FC = observer(() => {
           </IconButton>
         </Box>
 
-        <AddEventDialog loading={loading} open={isAddDialogOpen} onClose={handleCloseAddDialog} horses={horses} tasks={tasks} addEvent={addEvent} />
+        {/* Диалоги теперь находятся вне цикла рендеринга событий */}
+        <AddEventDialog
+          loading={loading}
+          open={isAddDialogOpen}
+          onClose={handleCloseAddDialog}
+          horses={horses}
+          tasks={tasks}
+          addEvent={addEvent}
+        />
+
+        {/* Рендерим диалог редактирования только когда есть выбранное событие */}
+        {editingEvent && (
+          <EditEventDialog
+            loading={loading}
+            horses={horses}
+            tasks={tasks}
+            open={!!editingEvent}
+            onClose={handleCloseEditDialog}
+            event={editingEvent}
+            updateEvent={updateEvent}
+          />
+        )}
       </Container>
     </Page>
   )

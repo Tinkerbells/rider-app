@@ -1,4 +1,6 @@
-import { createHashRouter, Outlet, RouterProvider } from 'react-router'
+import { createHashRouter, Navigate, Outlet, RouterProvider } from 'react-router'
+
+import { root } from '@/config/navigation/routes'
 
 import { NavigationMenu } from '../ui'
 import { tasksPageRoute } from '../tasks/tasks.route'
@@ -22,6 +24,7 @@ const browserRouter = createHashRouter([
       schedulePageRoute,
       horsesPageRoute,
       tasksPageRoute,
+      { path: '*', element: <Navigate to={root.$path()} replace /> },
     ],
   },
 ])

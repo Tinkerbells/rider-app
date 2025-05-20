@@ -115,7 +115,7 @@ importers:
         specifier: ^5.2.0
         version: 5.2.0(eslint@9.27.0)
       gh-pages:
-        specifier: ^6.1.1
+        specifier: ^6.3.0
         version: 6.3.0
       globals:
         specifier: ^15.2.0
