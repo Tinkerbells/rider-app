@@ -2,6 +2,7 @@ import { useMemo } from 'react'
 import { observer } from 'mobx-react-lite'
 import EditIcon from '@mui/icons-material/Edit'
 import CheckCircleIcon from '@mui/icons-material/CheckCircle'
+import CircleIconOutlined from '@mui/icons-material/CircleOutlined'
 import { Avatar, Box, Checkbox, Chip, IconButton, Paper, Typography } from '@mui/material'
 
 import type { NullableType } from '@/common'
@@ -84,17 +85,8 @@ export const HorseEventItem = observer(({ event, allTasks, horse, toggleEvent, h
           <Checkbox
             checked={event.completed}
             onChange={handleToggleComplete}
-            icon={(
-              <Box sx={{
-                width: 24,
-                height: 24,
-                border: '1px solid #ddd',
-                borderRadius: 1,
-                bgcolor: 'background.paper',
-              }}
-              />
-            )}
-            checkedIcon={<CheckCircleIcon sx={{ color: '#4CAF50' }} />}
+            checkedIcon={<CheckCircleIcon sx={{ color: '#4CAF50', fontSize: 30 }} />}
+            sx={{ '& .MuiSvgIcon-root': { fontSize: 30 } }}
           />
         </Box>
       </Paper>

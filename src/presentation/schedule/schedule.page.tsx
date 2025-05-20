@@ -6,7 +6,16 @@ import { Fragment, useState } from 'react'
 import { observer } from 'mobx-react-lite'
 import AddIcon from '@mui/icons-material/Add'
 import NoteAddIcon from '@mui/icons-material/NoteAdd'
-import { Box, Container, Fab, IconButton, Paper, Typography } from '@mui/material'
+import {
+  Box,
+  Container,
+  Fab,
+  FormControlLabel,
+  IconButton,
+  Paper,
+  Switch,
+  Typography,
+} from '@mui/material'
 
 import { HorseEventsContoller, HorsesController, TasksController } from '@/controllers'
 
@@ -15,7 +24,17 @@ import { AddEventDialog, HorseEventItem } from './components'
 import { EditEventDialog } from './components/edit-event-dialog'
 
 export const SchedulePage: FC = observer(() => {
-  const { eventsByTime, selectedDate, toggleEventCompleted, addEvent, updateEvent, loading } = HorseEventsContoller
+  const {
+    eventsByTime,
+    selectedDate,
+    showCompleted,
+    toggleShowCompleted,
+    toggleEventCompleted,
+    addEvent,
+    updateEvent,
+    loading,
+  } = HorseEventsContoller
+
   const { findOneById, horses } = HorsesController
   const { tasks } = TasksController
 
@@ -50,7 +69,19 @@ export const SchedulePage: FC = observer(() => {
             </Typography>
           </Box>
         </Paper>
-
+        <Box sx={{ display: 'flex', justifyContent: 'end', mb: 2 }}>
+          <FormControlLabel
+            sx={{ flexDirection: 'row-reverse' }}
+            control={(
+              <Switch
+                checked={showCompleted}
+                onChange={toggleShowCompleted}
+                color="primary"
+              />
+            )}
+            label="Выполненные"
+          />
+        </Box>
         <Box sx={{ flex: 1, overflow: 'auto', mb: 2, px: 1 }}>
           {eventsByTime.length > 0
             ? (
@@ -71,7 +102,9 @@ export const SchedulePage: FC = observer(() => {
             : (
                 <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
                   <Typography variant="body1" color="text.secondary">
-                    Добавьте события
+                    {showCompleted
+                      ? 'Нет событий на этот день'
+                      : 'Добавьте события или включите отображение выполненных задач'}
                   </Typography>
                 </Box>
               )}

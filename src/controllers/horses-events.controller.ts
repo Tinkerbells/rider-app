@@ -11,6 +11,8 @@ const EVENTS_QUERY_KEY = 'horse-events'
 
 class HorseEventsStore {
   selectedDate: string = format(new Date(), 'MM-dd-yyyy')
+  // Добавляем состояние для отслеживания режима отображения выполненных задач
+  showCompleted: boolean = false
 
   // Запрос для получения всех событий
   eventsQuery = new MobxQuery<HorseEvent[], Error>({
@@ -69,9 +71,17 @@ class HorseEventsStore {
     return this.eventsQuery.result.data || []
   }
 
-  // Получение событий, отфильтрованных по выбранной дате
+  // Добавляем метод для переключения режима отображения выполненных задач
+  toggleShowCompleted(): void {
+    this.showCompleted = !this.showCompleted
+  }
+
+  // Обновляем фильтрацию событий с учетом showCompleted
   get filteredEvents(): HorseEvent[] {
-    return this.events.filter(event => event.date === this.selectedDate)
+    return this.events.filter(event =>
+      event.date === this.selectedDate
+      && (this.showCompleted || !event.completed),
+    )
   }
 
   get loading(): boolean {
