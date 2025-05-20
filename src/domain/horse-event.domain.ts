@@ -3,9 +3,8 @@ import type { Horse } from './horse.domain'
 
 export interface HorseEvent {
   id: string | number
-  horse: Horse['id']
-  tasks: Task['id'][]
-  name?: string
+  horseId: Horse['id']
+  tasksIds: Task['id'][]
   time: string
   date: string
   completed: boolean

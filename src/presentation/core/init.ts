@@ -16,8 +16,6 @@ import {
   themeParamsState,
 } from '@telegram-apps/sdk-react'
 
-import { loadDefaultTasks } from '@/seeds/tasks-seed'
-
 /**
  * Initializes the application and configures its dependencies.
  */
@@ -29,7 +27,6 @@ export async function init(options: {
   // Set @telegram-apps/sdk-react debug mode and initialize it.
   setDebug(options.debug)
   initSDK()
-  await loadDefaultTasks()
 
   // Add Eruda if needed.
   options.eruda && void import('eruda').then(({ default: eruda }) => {

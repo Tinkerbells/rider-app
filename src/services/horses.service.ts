@@ -23,6 +23,12 @@ export class HorsesService implements IHorsesRepository {
     this.storage.setObject(this.HORSES_KEY, { horses })
   }
 
+  findOneById(id: Horse['id']) {
+    const horses = this.getHorses()
+    const horse = horses.find(h => h.id === id)
+    return returnAfterDelay(horse || null)
+  }
+
   findAll() {
     const horses = this.getHorses()
     return returnAfterDelay(horses)

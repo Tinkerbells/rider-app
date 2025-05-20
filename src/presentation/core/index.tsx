@@ -1,5 +1,4 @@
 // Include Telegram UI styles first to allow our code override the package CSS.
-import '@telegram-apps/telegram-ui/dist/styles.css'
 import { StrictMode } from 'react'
 import ReactDOM from 'react-dom/client'
 import { retrieveLaunchParams } from '@telegram-apps/sdk-react'

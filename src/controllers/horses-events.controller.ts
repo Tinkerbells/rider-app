@@ -1,3 +1,4 @@
+import { format } from 'date-fns'
 import { makeAutoObservable } from 'mobx'
 import { MobxMutation, MobxQuery } from 'mobx-tanstack-query'
 
@@ -9,7 +10,7 @@ import { HorsesEventsService } from '@/services/horses-events.service'
 const EVENTS_QUERY_KEY = 'horse-events'
 
 class HorseEventsStore {
-  selectedDate: string = new Date().toISOString().split('T')[0]
+  selectedDate: string = format(new Date(), 'MM-dd-yyyy')
 
   // Запрос для получения всех событий
   eventsQuery = new MobxQuery<HorseEvent[], Error>({
@@ -62,10 +63,6 @@ class HorseEventsStore {
 
   constructor(private eventsService: HorsesEventsService) {
     makeAutoObservable(this, {}, { autoBind: true })
-  }
-
-  setSelectedDate(date: string) {
-    this.selectedDate = date
   }
 
   get events(): HorseEvent[] {
@@ -135,4 +132,4 @@ class HorseEventsStore {
 }
 
 // Initialize the store
-export const horseEventsStore = new HorseEventsStore(new HorsesEventsService())
+export const HorseEventsContoller = new HorseEventsStore(new HorsesEventsService())

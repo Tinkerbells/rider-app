@@ -1,42 +1,34 @@
-import { useState } from 'react'
+import { useMemo } from 'react'
 import { observer } from 'mobx-react-lite'
 import EditIcon from '@mui/icons-material/Edit'
 import CheckCircleIcon from '@mui/icons-material/CheckCircle'
 import { Box, Checkbox, Chip, IconButton, Paper, Typography } from '@mui/material'
 
-import type { HorseEvent } from '@/domain/horse-event.domain'
-
-import { horseEventsStore, horsesStore, tasksStore } from '@/stores'
+import type { NullableType } from '@/common'
+import type { Task } from '@/domain/task.domain'
 
 import './horse-event-item.css'
+
+import type { Horse } from '@/domain/horse.domain'
+import type { HorseEvent } from '@/domain/horse-event.domain'
+
 import horseIcon from '../../../../assets/horse.png'
-import { EditEventDialog } from '../../tasks/edit-event-dialog'
 
 interface HorseEventItemProps {
   event: HorseEvent
+  toggleEvent: (id: HorseEvent['id']) => void
+  allTasks: Task[]
+  horse: NullableType<Horse>
+  handleOpenEdit: () => void
 }
 
-export const HorseEventItem = observer(({ event }: HorseEventItemProps) => {
-  const { toggleEventCompleted } = horseEventsStore
-  const { horses } = horsesStore
-  const { tasks } = tasksStore
-  const [isEditOpen, setIsEditOpen] = useState(false)
-
-  // Находим объект лошади по ID
-  const horse = horses.find(h => h.id === event.horse)
-  // Находим объекты задач по их ID
-  const eventTasks = tasks.filter(task => event.tasks.includes(task.id))
+export const HorseEventItem = observer(({ event, allTasks, horse, toggleEvent, handleOpenEdit }: HorseEventItemProps) => {
+  const tasks = useMemo(() => (
+    allTasks.filter(t => event.tasksIds.includes(t.id))
+  ), [allTasks, event])
 
   const handleToggleComplete = () => {
-    toggleEventCompleted(event.id)
-  }
-
-  const handleOpenEdit = () => {
-    setIsEditOpen(true)
-  }
-
-  const handleCloseEdit = () => {
-    setIsEditOpen(false)
+    toggleEvent(event.id)
   }
 
   if (!horse)
@@ -74,7 +66,7 @@ export const HorseEventItem = observer(({ event }: HorseEventItemProps) => {
 
         <Box sx={{ flex: 1, ml: 2 }}>
           <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-            {eventTasks.map(task => (
+            {tasks.map(task => (
               <Chip
                 key={task.id}
                 label={task.title}
@@ -117,12 +109,6 @@ export const HorseEventItem = observer(({ event }: HorseEventItemProps) => {
           />
         </Box>
       </Paper>
-
-      <EditEventDialog
-        open={isEditOpen}
-        onClose={handleCloseEdit}
-        event={event}
-      />
     </>
   )
 })

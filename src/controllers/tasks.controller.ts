@@ -4,6 +4,7 @@ import { MobxMutation, MobxQuery } from 'mobx-tanstack-query'
 import type { Task } from '@/domain/task.domain'
 
 import { TasksService } from '@/services/tasks.service'
+import { DEFAULT_TASKS } from '@/config/tasks/default-tasks'
 import { queryClient } from '@/presentation/core/react/query-client'
 
 const TASKS_QUERY_KEY = 'tasks'
@@ -100,5 +101,4 @@ class TasksStore {
 }
 
 // Инициализация store
-export const tasksStore = new TasksStore(new TasksService())
-
+export const TasksController = new TasksStore(new TasksService())

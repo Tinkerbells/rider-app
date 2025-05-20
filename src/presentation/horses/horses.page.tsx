@@ -28,7 +28,7 @@ import {
 
 import type { Horse } from '@/domain/horse.domain'
 
-import { horsesStore } from '@/stores'
+import { HorsesController } from '@/controllers'
 import { publicUrl } from '@/common/helpers/publicUrl'
 
 import { Page } from '../core/page'
@@ -58,10 +58,10 @@ const HorseFormDialog: FC<HorseFormDialogProps> = ({ open, onClose, horse, isEdi
 
   const onSubmit = (data: HorseFormData) => {
     if (isEdit && horse) {
-      horsesStore.updateHorse(horse.id, { ...horse, name: data.name })
+      HorsesController.updateHorse(horse.id, { ...horse, name: data.name })
     }
     else {
-      horsesStore.addHorse({
+      HorsesController.addHorse({
         id: Date.now().toString(),
         name: data.name,
         colors: ['brown'],
@@ -121,7 +121,7 @@ const HorseFormDialog: FC<HorseFormDialogProps> = ({ open, onClose, horse, isEdi
 }
 
 export const HorsesPage: FC = observer(() => {
-  const { horses, removeHorse } = horsesStore
+  const { horses, removeHorse } = HorsesController
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editingHorse, setEditingHorse] = useState<Horse | undefined>(undefined)
 

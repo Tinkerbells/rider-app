@@ -2,7 +2,6 @@ import type { Task } from '@/domain/task.domain'
 
 import { tasksStore } from '@/stores/tasks.store'
 
-// Дефолтные задачи, которые нужно создать при первом запуске приложения
 const DEFAULT_TASKS: Task[] = [
   {
     id: 'default-collect',

@@ -8,14 +8,19 @@ import AddIcon from '@mui/icons-material/Add'
 import NoteAddIcon from '@mui/icons-material/NoteAdd'
 import { Box, Container, Fab, IconButton, Paper, Typography } from '@mui/material'
 
-import { horseEventsStore } from '@/stores'
+import { HorseEventsContoller, HorsesController, TasksController } from '@/controllers'
 
 import { Page } from '../core/page'
-import { AddEventDialog, HorseEventItem } from './horse-event'
+import { AddEventDialog, HorseEventItem } from './components'
+import { EditEventDialog } from './components/edit-event-dialog'
 
 export const SchedulePage: FC = observer(() => {
-  const { eventsByTime, selectedDate } = horseEventsStore
+  const { eventsByTime, selectedDate, toggleEventCompleted, addEvent, updateEvent } = HorseEventsContoller
+  const { findOneById, horses } = HorsesController
+  const { tasks } = TasksController
+
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
 
   const formattedDate = format(new Date(selectedDate), '\'Смена\' dd.MM', { locale: ru })
 
@@ -25,6 +30,14 @@ export const SchedulePage: FC = observer(() => {
 
   const handleCloseAddDialog = () => {
     setIsAddDialogOpen(false)
+  }
+
+  const handleOpenEditDialog = () => {
+    setIsEditDialogOpen(true)
+  }
+
+  const handleCloseEditDialog = () => {
+    setIsEditDialogOpen(false)
   }
 
   return (
@@ -47,7 +60,10 @@ export const SchedulePage: FC = observer(() => {
                       {time}
                     </Typography>
                     {events.map(event => (
-                      <HorseEventItem key={event.id} event={event} />
+                      <>
+                        <HorseEventItem handleOpenEdit={handleOpenEditDialog} allTasks={tasks} horse={findOneById(event.horseId)} toggleEvent={toggleEventCompleted} key={event.id} event={event} />
+                        <EditEventDialog horses={horses} tasks={tasks} open={isEditDialogOpen} onClose={handleCloseEditDialog} event={event} updateEvent={updateEvent} />
+                      </>
                     ))}
                   </Box>
                 ))
@@ -55,7 +71,7 @@ export const SchedulePage: FC = observer(() => {
             : (
                 <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
                   <Typography variant="body1" color="text.secondary">
-                    Нет событий на этот день
+                    Добавьте события
                   </Typography>
                 </Box>
               )}
@@ -87,7 +103,7 @@ export const SchedulePage: FC = observer(() => {
           </IconButton>
         </Box>
 
-        <AddEventDialog open={isAddDialogOpen} onClose={handleCloseAddDialog} />
+        <AddEventDialog open={isAddDialogOpen} onClose={handleCloseAddDialog} horses={horses} tasks={tasks} addEvent={addEvent} />
       </Container>
     </Page>
   )

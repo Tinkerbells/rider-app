@@ -1,6 +1,7 @@
 import { makeAutoObservable } from 'mobx'
 import { MobxMutation, MobxQuery } from 'mobx-tanstack-query'
 
+import type { NullableType } from '@/common'
 import type { Horse } from '@/domain/horse.domain'
 
 import { HorsesService } from '@/services/horses.service'
@@ -8,7 +9,7 @@ import { queryClient } from '@/presentation/core/react/query-client'
 
 const HORSES_QUERY_KEY = 'horses'
 
-class HorsesStore {
+export class HorsesStore {
   // Запрос для получения всех лошадей
   horsesQuery = new MobxQuery<Horse[], Error>({
     queryClient,
@@ -56,8 +57,9 @@ class HorsesStore {
     return this.horsesQuery.result.data || []
   }
 
-  findById(id: Horse['id']): Horse {
-    return this.horsesQuery.result.data 
+  findOneById(id: Horse['id']): NullableType<Horse> {
+    const horse = this.horsesQuery.result.data?.find(h => h.id === id)
+    return horse || null
   }
 
   get loading(): boolean {
@@ -94,4 +96,4 @@ class HorsesStore {
 }
 
 // Initialize the store
-export const horsesStore = new HorsesStore(new HorsesService())
+export const HorsesController = new HorsesStore(new HorsesService())

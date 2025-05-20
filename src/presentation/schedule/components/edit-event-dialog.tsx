@@ -3,8 +3,8 @@ import type {
   SelectChangeEvent,
 } from '@mui/material'
 
-import { format } from 'date-fns'
 import { ru } from 'date-fns/locale'
+import { format, parse } from 'date-fns'
 import { Controller, useForm } from 'react-hook-form'
 import { TimePicker } from '@mui/x-date-pickers/TimePicker'
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns'
@@ -12,12 +12,14 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider'
 import {
   Box,
   Button,
+  Checkbox,
   Chip,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
   FormControl,
+  FormControlLabel,
   FormHelperText,
   InputLabel,
   MenuItem,
@@ -26,68 +28,66 @@ import {
   TextField,
 } from '@mui/material'
 
+import type { NullableType } from '@/common'
+import type { Task } from '@/domain/task.domain'
+import type { Horse } from '@/domain/horse.domain'
 import type { HorseEvent } from '@/domain/horse-event.domain'
 
-import { horseEventsStore, horsesStore, tasksStore } from '@/stores'
-
-interface AddEventDialogProps {
+interface EditEventDialogProps {
   open: boolean
   onClose: () => void
+  event: NullableType<HorseEvent>
+  horses: Horse[]
+  tasks: Task[]
+  updateEvent: (id: HorseEvent['id'], event: Partial<HorseEvent>) => void
 }
 
 interface EventFormData {
   time: Date | null
   horseId: string | number
-  taskIds: string[]
+  tasksIds: string[]
   name?: string
+  completed: boolean
 }
 
-export const AddEventDialog: FC<AddEventDialogProps> = ({ open, onClose }) => {
-  const { horses } = horsesStore
-  const { tasks } = tasksStore
-  const { selectedDate, addEvent } = horseEventsStore
-
+export const EditEventDialog: FC<EditEventDialogProps> = ({ open, onClose, event, horses, tasks, updateEvent }) => {
   const {
     control,
     handleSubmit,
     reset,
-    watch,
     setValue,
     formState: { errors },
   } = useForm<EventFormData>({
-    defaultValues: {
-      time: new Date(),
-      horseId: '',
-      taskIds: [],
-      name: '',
-    },
+    defaultValues: event
+      ? {
+          time: event.time ? parse(event.time, 'HH:mm', new Date()) : new Date(),
+          horseId: event.horseId,
+          tasksIds: event.tasksIds,
+          completed: event.completed,
+        }
+      : {
+          time: new Date(),
+          horseId: '',
+          tasksIds: [],
+          name: '',
+          completed: false,
+        },
   })
 
-  const watchTaskIds = watch('taskIds')
-  // Предполагаем, что у нас есть специальная задача с ID custom, требующая названия
-  const hasCustomTask = watchTaskIds.includes('custom')
-
   const onSubmit = (data: EventFormData) => {
-    if (!data.time || !data.horseId)
+    if (!event || !data.time)
       return
 
-    if (data.taskIds.length === 0) {
-      // Должна быть хотя бы одна задача
-      return
+    const timeString = format(data.time, 'HH:mm')
+
+    const updatedEvent: Partial<HorseEvent> = {
+      horseId: data.horseId,
+      tasksIds: data.tasksIds,
+      time: timeString,
+      completed: data.completed,
     }
 
-    const newEvent: HorseEvent = {
-      id: Date.now().toString(),
-      horse: data.horseId,
-      tasks: data.taskIds,
-      name: hasCustomTask ? data.name : undefined,
-      time: format(data.time, 'HH:mm'),
-      date: selectedDate,
-      completed: false,
-    }
-
-    addEvent(newEvent)
-    reset()
+    updateEvent(event.id, updatedEvent)
     onClose()
   }
 
@@ -98,7 +98,7 @@ export const AddEventDialog: FC<AddEventDialogProps> = ({ open, onClose }) => {
 
   const handleTasksChange = (event: SelectChangeEvent<string[]>) => {
     const value = event.target.value as string[]
-    setValue('taskIds', value)
+    setValue('tasksIds', value)
 
     // Если убрали Custom из списка, очищаем имя
     if (!value.includes('custom')) {
@@ -106,9 +106,12 @@ export const AddEventDialog: FC<AddEventDialogProps> = ({ open, onClose }) => {
     }
   }
 
+  if (!event)
+    return null
+
   return (
     <Dialog open={open} onClose={handleCancel} fullWidth maxWidth="sm">
-      <DialogTitle>Добавить запись</DialogTitle>
+      <DialogTitle>Редактировать задачу</DialogTitle>
       <form onSubmit={handleSubmit(onSubmit)}>
         <DialogContent>
           <Box sx={{ mt: 2, display: 'flex', flexDirection: 'column', gap: 2 }}>
@@ -159,14 +162,14 @@ export const AddEventDialog: FC<AddEventDialogProps> = ({ open, onClose }) => {
             />
 
             <Controller
-              name="taskIds"
+              name="tasksIds"
               control={control}
               rules={{
                 required: 'Выберите хотя бы одну задачу',
-                validate: value => value.length > 0 || 'Выберите хотя бы одну задачу',
+                validate: value => (value && value.length > 0) || 'Выберите хотя бы одну задачу',
               }}
               render={({ field }) => (
-                <FormControl fullWidth error={!!errors.taskIds}>
+                <FormControl fullWidth error={!!errors.tasksIds}>
                   <InputLabel>Задачи</InputLabel>
                   <Select
                     {...field}
@@ -210,31 +213,47 @@ export const AddEventDialog: FC<AddEventDialogProps> = ({ open, onClose }) => {
                       </MenuItem>
                     ))}
                   </Select>
-                  {errors.taskIds && (
-                    <FormHelperText>{errors.taskIds.message}</FormHelperText>
+                  {errors.tasksIds && (
+                    <FormHelperText>{errors.tasksIds.message}</FormHelperText>
                   )}
                 </FormControl>
               )}
             />
 
-            {hasCustomTask && (
-              <Controller
-                name="name"
-                control={control}
-                rules={{
-                  required: hasCustomTask ? 'Введите название пользовательской задачи' : false,
-                }}
-                render={({ field }) => (
-                  <TextField
-                    {...field}
-                    label="Название пользовательской задачи"
-                    fullWidth
-                    error={!!errors.name}
-                    helperText={errors.name?.message}
-                  />
-                )}
-              />
-            )}
+            {/* {hasCustomTask && ( */}
+            {/*   <Controller */}
+            {/*     name="name" */}
+            {/*     control={control} */}
+            {/*     rules={{ */}
+            {/*       required: hasCustomTask ? 'Введите название пользовательской задачи' : false, */}
+            {/*     }} */}
+            {/*     render={({ field }) => ( */}
+            {/*       <TextField */}
+            {/*         {...field} */}
+            {/*         label="Название пользовательской задачи" */}
+            {/*         fullWidth */}
+            {/*         error={!!errors.name} */}
+            {/*         helperText={errors.name?.message} */}
+            {/*       /> */}
+            {/*     )} */}
+            {/*   /> */}
+            {/* )} */}
+
+            <Controller
+              name="completed"
+              control={control}
+              render={({ field }) => (
+                <FormControlLabel
+                  control={(
+                    <Checkbox
+                      checked={field.value}
+                      onChange={e => field.onChange(e.target.checked)}
+                    />
+                  )}
+                  label="Выполнено"
+                />
+              )}
+            />
           </Box>
         </DialogContent>
         <DialogActions>
@@ -242,7 +261,7 @@ export const AddEventDialog: FC<AddEventDialogProps> = ({ open, onClose }) => {
             Отмена
           </Button>
           <Button type="submit" color="primary" variant="contained">
-            Добавить
+            Сохранить
           </Button>
         </DialogActions>
       </form>

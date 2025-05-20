@@ -3,6 +3,7 @@ import type { IStorage } from '@/domain/ports/storage'
 import type { ITasksRepository } from '@/repositories/tasks.repository'
 
 import { returnAfterDelay } from '@/common'
+import { DEFAULT_TASKS } from '@/config/tasks/default-tasks'
 
 import { LocalStorageService } from './local-storage.service'
 
@@ -13,6 +14,16 @@ interface TasksStorage {
 export class TasksService implements ITasksRepository {
   private readonly TASKS_KEY: string = 'tasks'
   storage: IStorage = new LocalStorageService()
+
+  constructor() {
+    this._init()
+  }
+
+  private _init() {
+    if (!this.storage.has(this.TASKS_KEY)) {
+      this.storage.setObject(this.TASKS_KEY, { tasks: DEFAULT_TASKS })
+    }
+  }
 
   private getTasks(): Task[] {
     const storage = this.storage.getAsObject<TasksStorage>(this.TASKS_KEY)

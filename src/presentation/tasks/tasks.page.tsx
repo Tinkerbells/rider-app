@@ -28,7 +28,7 @@ import type { HorseEvent } from '@/domain/horse-event.domain'
 import { horseEventsStore, horsesStore } from '@/stores'
 
 import { Page } from '../core/page'
-import { EditEventDialog } from './edit-event-dialog'
+import { EditEventDialog } from '../schedule/components/edit-event-dialog'
 
 export const TasksPage: FC = observer(() => {
   const { events } = horseEventsStore
