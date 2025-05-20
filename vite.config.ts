@@ -1,11 +1,10 @@
-import { defineConfig } from 'vite';
-import tsconfigPaths from 'vite-tsconfig-paths';
-import react from '@vitejs/plugin-react-swc';
-import mkcert from 'vite-plugin-mkcert';
+import { defineConfig } from 'vite'
+import mkcert from 'vite-plugin-mkcert'
+import react from '@vitejs/plugin-react-swc'
+import tsconfigPaths from 'vite-tsconfig-paths'
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  base: '/reactjs-template/',
   css: {
     preprocessorOptions: {
       scss: {
@@ -33,5 +32,4 @@ export default defineConfig({
     // Exposes your dev server and makes it accessible for the devices in the same network.
     host: true,
   },
-});
-
+})

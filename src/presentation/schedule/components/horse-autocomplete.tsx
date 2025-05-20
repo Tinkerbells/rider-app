@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Autocomplete, Box, TextField } from '@mui/material'
+import { Autocomplete, TextField } from '@mui/material'
 
 import type { Horse } from '@/domain/horse.domain'
 

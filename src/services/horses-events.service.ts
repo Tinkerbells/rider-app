@@ -37,7 +37,7 @@ export class HorsesEventsService implements IHorsesEventsRepository {
 
   findByHorse(horseId: Horse['id']) {
     const events = this.getEvents()
-    const filteredEvents = events.filter(event => event.horse.id === horseId)
+    const filteredEvents = events.filter(event => event.horseId === horseId)
     return returnAfterDelay(filteredEvents)
   }
 

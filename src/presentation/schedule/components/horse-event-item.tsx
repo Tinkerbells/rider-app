@@ -2,7 +2,6 @@ import { useMemo } from 'react'
 import { observer } from 'mobx-react-lite'
 import EditIcon from '@mui/icons-material/Edit'
 import CheckCircleIcon from '@mui/icons-material/CheckCircle'
-import CircleIconOutlined from '@mui/icons-material/CircleOutlined'
 import { Avatar, Box, Checkbox, Chip, IconButton, Paper, Typography } from '@mui/material'
 
 import type { NullableType } from '@/common'
