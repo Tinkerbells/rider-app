@@ -1,7 +1,7 @@
 import { createHashRouter, Outlet, RouterProvider } from 'react-router'
 
 import { NavigationMenu } from '../ui'
-// import { tasksPageRoute } from '../tasks/tasks.route'
+import { tasksPageRoute } from '../tasks/tasks.route'
 import { horsesPageRoute } from '../horses/horses.route'
 import { schedulePageRoute } from '../schedule/schedule.route'
 
@@ -21,7 +21,7 @@ const browserRouter = createHashRouter([
     children: [
       schedulePageRoute,
       horsesPageRoute,
-      // tasksPageRoute,
+      tasksPageRoute,
     ],
   },
 ])

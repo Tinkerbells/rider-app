@@ -15,6 +15,7 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
+  Fab,
   FormControl,
   IconButton,
   List,
@@ -22,6 +23,7 @@ import {
   ListItemAvatar,
   ListItemSecondaryAction,
   ListItemText,
+  Paper,
   TextField,
   Typography,
 } from '@mui/material'
@@ -156,52 +158,58 @@ export const HorsesPage: FC = observer(() => {
   return (
     <Page>
       <Container maxWidth="sm" sx={{ py: 2, height: 'calc(100vh - 56px)', display: 'flex', flexDirection: 'column' }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-          <Typography variant="h5" component="h1">
-            Лошади
-          </Typography>
-          <Button
-            startIcon={<AddIcon />}
-            variant="contained"
-            color="primary"
-            onClick={handleAddHorse}
-          >
-            Добавить
-          </Button>
-        </Box>
+        <Paper elevation={0} sx={{ p: 2, mb: 2, borderRadius: 4 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <Typography variant="h5" component="h1" fontWeight="bold" align="center">
+              Лошадки
+            </Typography>
+          </Box>
+        </Paper>
 
-        <List sx={{ flex: 1, overflow: 'auto' }}>
-          {horses.length > 0
-            ? (
-                horses.map(horse => (
-                  <ListItem
-                    key={horse.id}
-                    divider
-                    sx={{ borderRadius: 2, mb: 1, bgcolor: 'background.paper' }}
-                  >
-                    <ListItemAvatar>
-                      <Avatar src={getHorseIcon(horse.id)} alt={horse.name} sx={{ width: 40, height: 40 }} />
-                    </ListItemAvatar>
-                    <ListItemText primary={horse.name} />
-                    <ListItemSecondaryAction>
-                      <IconButton edge="end" onClick={() => handleEditHorse(horse)}>
-                        <EditIcon />
-                      </IconButton>
-                      <IconButton edge="end" onClick={() => handleDeleteHorse(horse.id)}>
-                        <DeleteIcon />
-                      </IconButton>
-                    </ListItemSecondaryAction>
-                  </ListItem>
-                ))
-              )
-            : (
-                <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
-                  <Typography variant="body1" color="text.secondary">
-                    Нет добавленных лошадей
-                  </Typography>
-                </Box>
-              )}
-        </List>
+        <Box sx={{ flex: 1, overflow: 'auto', mb: 2, px: 1 }}>
+          <List sx={{ flex: 1, overflow: 'auto' }}>
+            {horses.length > 0
+              ? (
+                  horses.map(horse => (
+                    <ListItem
+                      key={horse.id}
+                      divider
+                      sx={{ borderRadius: 2, mb: 1, bgcolor: 'background.paper' }}
+                    >
+                      <ListItemAvatar>
+                        <Avatar src={getHorseIcon(horse.id)} alt={horse.name} sx={{ width: 40, height: 40 }} />
+                      </ListItemAvatar>
+                      <ListItemText primary={horse.name} />
+                      <ListItemSecondaryAction>
+                        <IconButton edge="end" onClick={() => handleEditHorse(horse)}>
+                          <EditIcon />
+                        </IconButton>
+                        <IconButton edge="end" onClick={() => handleDeleteHorse(horse.id)}>
+                          <DeleteIcon />
+                        </IconButton>
+                      </ListItemSecondaryAction>
+                    </ListItem>
+                  ))
+                )
+              : (
+                  <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
+                    <Typography variant="body1" color="text.secondary">
+                      Нет добавленных лошадей
+                    </Typography>
+                  </Box>
+                )}
+          </List>
+        </Box>
+        <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
+          <Fab
+            color="primary"
+            aria-label="add"
+            onClick={handleAddHorse}
+            sx={{ position: 'relative', zIndex: 1 }}
+          >
+            <AddIcon />
+          </Fab>
+        </Box>
       </Container>
 
       <HorseFormDialog
