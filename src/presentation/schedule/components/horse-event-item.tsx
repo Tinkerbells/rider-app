@@ -2,7 +2,7 @@ import { useMemo } from 'react'
 import { observer } from 'mobx-react-lite'
 import EditIcon from '@mui/icons-material/Edit'
 import CheckCircleIcon from '@mui/icons-material/CheckCircle'
-import { Box, Checkbox, Chip, IconButton, Paper, Typography } from '@mui/material'
+import { Avatar, Box, Checkbox, Chip, IconButton, Paper, Typography } from '@mui/material'
 
 import type { NullableType } from '@/common'
 import type { Task } from '@/domain/task.domain'
@@ -54,11 +54,7 @@ export const HorseEventItem = observer(({ event, allTasks, horse, toggleEvent, h
           width: 60,
         }}
         >
-          <img
-            src={horseIcon}
-            alt={horse.name}
-            style={{ width: 40, height: 40 }}
-          />
+          <Avatar src={horseIcon} alt={horse.name} sx={{ width: 40, height: 40 }} />
           <Typography variant="body2" sx={{ mt: 0.5 }}>
             {horse.name}
           </Typography>
@@ -77,13 +73,6 @@ export const HorseEventItem = observer(({ event, allTasks, horse, toggleEvent, h
                 }}
               />
             ))}
-            {event.name && (
-              <Chip
-                label={event.name}
-                size="small"
-                variant="outlined"
-              />
-            )}
           </Box>
         </Box>
 

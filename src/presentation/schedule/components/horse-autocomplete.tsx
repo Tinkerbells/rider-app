@@ -48,16 +48,6 @@ export function HorseAutocomplete({
       inputValue={inputValue}
       getOptionLabel={option => option.name}
       isOptionEqualToValue={(option, value) => option.id === value.id}
-      renderOption={(props, option) => (
-        <Box component="li" sx={{ '& > img': { mr: 2, flexShrink: 0 } }} {...props}>
-          {/* <Avatar */}
-          {/*   src={getHorseIcon(option.id)} */}
-          {/*   alt={option.name} */}
-          {/*   sx={{ width: 30, height: 30, mr: 2 }} */}
-          {/* /> */}
-          {option.name}
-        </Box>
-      )}
       onChange={(_, newValue) => {
         if (newValue) {
           onChange(newValue.id)

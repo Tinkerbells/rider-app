@@ -34,6 +34,7 @@ import { HorsesController } from '@/controllers'
 import { publicUrl } from '@/common/helpers/publicUrl'
 
 import { Page } from '../core/page'
+import horseIcon from '../../../assets/horse.png'
 
 interface HorseFormData {
   name: string
@@ -177,7 +178,7 @@ export const HorsesPage: FC = observer(() => {
                       sx={{ borderRadius: 2, mb: 1, bgcolor: 'background.paper' }}
                     >
                       <ListItemAvatar>
-                        <Avatar src={getHorseIcon(horse.id)} alt={horse.name} sx={{ width: 40, height: 40 }} />
+                        <Avatar src={horseIcon} alt={horse.name} sx={{ width: 40, height: 40 }} />
                       </ListItemAvatar>
                       <ListItemText primary={horse.name} />
                       <ListItemSecondaryAction>
