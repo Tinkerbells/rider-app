@@ -20,6 +20,7 @@ import {
 import { HorseEventsContoller, HorsesController, TasksController } from '@/controllers'
 
 import { Page } from '../core/page'
+import { NotFoundIcon } from '../ui'
 import { AddEventDialog, HorseEventItem } from './components'
 import { EditEventDialog } from './components/edit-event-dialog'
 
@@ -100,11 +101,12 @@ export const SchedulePage: FC = observer(() => {
                 ))
               )
             : (
-                <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
-                  <Typography variant="body1" color="text.secondary">
-                    {showCompleted
-                      ? 'Нет событий на этот день'
-                      : 'Добавьте события или включите отображение выполненных задач'}
+                <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
+                  <Box sx={{ ml: 8 }}>
+                    <NotFoundIcon width="160px" height="160px" />
+                  </Box>
+                  <Typography variant="subtitle1" color="text.primary" align="center">
+                    Добавьте события или включите выполненные
                   </Typography>
                 </Box>
               )}

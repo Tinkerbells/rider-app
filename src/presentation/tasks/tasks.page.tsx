@@ -1,7 +1,7 @@
 import type { FC } from 'react'
 
-import { useState } from 'react'
 import { observer } from 'mobx-react-lite'
+import { useEffect, useState } from 'react'
 import AddIcon from '@mui/icons-material/Add'
 import EditIcon from '@mui/icons-material/Edit'
 import { MuiColorInput } from 'mui-color-input'
@@ -56,6 +56,12 @@ const TaskFormDialog: FC<TaskFormDialogProps> = ({ open, onClose, task, isEdit =
       color: task?.color || '#1976d2',
     },
   })
+
+  useEffect(() => {
+    if (task && isEdit) {
+      reset({ title: task.title, color: task.color })
+    }
+  }, [task, isEdit, reset])
 
   const onSubmit = (data: TaskFormData) => {
     if (isEdit && task) {

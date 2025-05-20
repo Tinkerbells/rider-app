@@ -1,4 +1,5 @@
 export * from './horse-icon'
 export * from './link'
 export * from './navigation-menu'
+export * from './not-found'
 export * from './page-loader'

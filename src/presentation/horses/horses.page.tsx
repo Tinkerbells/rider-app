@@ -20,6 +20,7 @@ import {
   Fab,
   FormControl,
   Grid,
+  Input,
   InputAdornment,
   Paper,
   TextField,
@@ -195,20 +196,16 @@ export const HorsesPage: FC = observer(() => {
 
         {/* Добавляем поисковое поле */}
         <Box sx={{ mb: 2, px: 1 }}>
-          <TextField
+          <Input
             fullWidth
-            variant="outlined"
             placeholder="Поиск лошадей..."
             value={searchQuery}
             onChange={handleSearchChange}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <SearchIcon />
-                </InputAdornment>
-              ),
-            }}
-            size="small"
+            startAdornment={(
+              <InputAdornment position="start">
+                <SearchIcon />
+              </InputAdornment>
+            )}
           />
         </Box>
 
