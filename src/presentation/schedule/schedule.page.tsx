@@ -1,8 +1,8 @@
 import type { FC } from 'react'
 
-import { useState } from 'react'
 import { format } from 'date-fns'
 import { ru } from 'date-fns/locale'
+import { Fragment, useState } from 'react'
 import { observer } from 'mobx-react-lite'
 import AddIcon from '@mui/icons-material/Add'
 import NoteAddIcon from '@mui/icons-material/NoteAdd'
@@ -15,7 +15,7 @@ import { AddEventDialog, HorseEventItem } from './components'
 import { EditEventDialog } from './components/edit-event-dialog'
 
 export const SchedulePage: FC = observer(() => {
-  const { eventsByTime, selectedDate, toggleEventCompleted, addEvent, updateEvent } = HorseEventsContoller
+  const { eventsByTime, selectedDate, toggleEventCompleted, addEvent, updateEvent, loading } = HorseEventsContoller
   const { findOneById, horses } = HorsesController
   const { tasks } = TasksController
 
@@ -60,10 +60,10 @@ export const SchedulePage: FC = observer(() => {
                       {time}
                     </Typography>
                     {events.map(event => (
-                      <>
-                        <HorseEventItem handleOpenEdit={handleOpenEditDialog} allTasks={tasks} horse={findOneById(event.horseId)} toggleEvent={toggleEventCompleted} key={event.id} event={event} />
-                        <EditEventDialog horses={horses} tasks={tasks} open={isEditDialogOpen} onClose={handleCloseEditDialog} event={event} updateEvent={updateEvent} />
-                      </>
+                      <Fragment key={event.id}>
+                        <HorseEventItem handleOpenEdit={handleOpenEditDialog} allTasks={tasks} horse={findOneById(event.horseId)} toggleEvent={toggleEventCompleted} event={event} />
+                        <EditEventDialog loading={loading} horses={horses} tasks={tasks} open={isEditDialogOpen} onClose={handleCloseEditDialog} event={event} updateEvent={updateEvent} />
+                      </Fragment>
                     ))}
                   </Box>
                 ))
@@ -103,7 +103,7 @@ export const SchedulePage: FC = observer(() => {
           </IconButton>
         </Box>
 
-        <AddEventDialog open={isAddDialogOpen} onClose={handleCloseAddDialog} horses={horses} tasks={tasks} addEvent={addEvent} />
+        <AddEventDialog loading={loading} open={isAddDialogOpen} onClose={handleCloseAddDialog} horses={horses} tasks={tasks} addEvent={addEvent} />
       </Container>
     </Page>
   )

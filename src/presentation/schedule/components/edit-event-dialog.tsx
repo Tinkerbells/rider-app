@@ -25,13 +25,14 @@ import {
   MenuItem,
   OutlinedInput,
   Select,
-  TextField,
 } from '@mui/material'
 
 import type { NullableType } from '@/common'
 import type { Task } from '@/domain/task.domain'
 import type { Horse } from '@/domain/horse.domain'
 import type { HorseEvent } from '@/domain/horse-event.domain'
+
+import { HorseAutocomplete } from './horse-autocomplete'
 
 interface EditEventDialogProps {
   open: boolean
@@ -40,6 +41,7 @@ interface EditEventDialogProps {
   horses: Horse[]
   tasks: Task[]
   updateEvent: (id: HorseEvent['id'], event: Partial<HorseEvent>) => void
+  loading: boolean
 }
 
 interface EventFormData {
@@ -50,7 +52,7 @@ interface EventFormData {
   completed: boolean
 }
 
-export const EditEventDialog: FC<EditEventDialogProps> = ({ open, onClose, event, horses, tasks, updateEvent }) => {
+export const EditEventDialog: FC<EditEventDialogProps> = ({ open, onClose, event, horses, tasks, updateEvent, loading }) => {
   const {
     control,
     handleSubmit,
@@ -99,11 +101,6 @@ export const EditEventDialog: FC<EditEventDialogProps> = ({ open, onClose, event
   const handleTasksChange = (event: SelectChangeEvent<string[]>) => {
     const value = event.target.value as string[]
     setValue('tasksIds', value)
-
-    // Если убрали Custom из списка, очищаем имя
-    if (!value.includes('custom')) {
-      setValue('name', '')
-    }
   }
 
   if (!event)
@@ -142,22 +139,15 @@ export const EditEventDialog: FC<EditEventDialogProps> = ({ open, onClose, event
               control={control}
               rules={{ required: 'Выберите лошадь' }}
               render={({ field }) => (
-                <FormControl fullWidth error={!!errors.horseId}>
-                  <InputLabel>Лошадь</InputLabel>
-                  <Select
-                    {...field}
-                    label="Лошадь"
-                  >
-                    {horses.map(horse => (
-                      <MenuItem key={horse.id} value={horse.id}>
-                        {horse.name}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                  {errors.horseId && (
-                    <FormHelperText>{errors.horseId.message}</FormHelperText>
-                  )}
-                </FormControl>
+                <HorseAutocomplete
+                  horses={horses}
+                  loading={loading}
+                  value={field.value}
+                  onChange={field.onChange}
+                  error={!!errors.horseId}
+                  helperText={errors.horseId?.message}
+                  required
+                />
               )}
             />
 
@@ -219,25 +209,6 @@ export const EditEventDialog: FC<EditEventDialogProps> = ({ open, onClose, event
                 </FormControl>
               )}
             />
-
-            {/* {hasCustomTask && ( */}
-            {/*   <Controller */}
-            {/*     name="name" */}
-            {/*     control={control} */}
-            {/*     rules={{ */}
-            {/*       required: hasCustomTask ? 'Введите название пользовательской задачи' : false, */}
-            {/*     }} */}
-            {/*     render={({ field }) => ( */}
-            {/*       <TextField */}
-            {/*         {...field} */}
-            {/*         label="Название пользовательской задачи" */}
-            {/*         fullWidth */}
-            {/*         error={!!errors.name} */}
-            {/*         helperText={errors.name?.message} */}
-            {/*       /> */}
-            {/*     )} */}
-            {/*   /> */}
-            {/* )} */}
 
             <Controller
               name="completed"

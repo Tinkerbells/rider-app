@@ -29,12 +29,15 @@ import type { Task } from '@/domain/task.domain'
 import type { Horse } from '@/domain/horse.domain'
 import type { HorseEvent } from '@/domain/horse-event.domain'
 
+import { HorseAutocomplete } from './horse-autocomplete'
+
 interface AddEventDialogProps {
   open: boolean
   onClose: () => void
   horses: Horse[]
   tasks: Task[]
   addEvent: (event: HorseEvent) => void
+  loading: boolean
 }
 
 interface AddEventForm extends Omit<HorseEvent, 'date' | 'time'> {
@@ -42,7 +45,7 @@ interface AddEventForm extends Omit<HorseEvent, 'date' | 'time'> {
   date: Date
 }
 
-export const AddEventDialog: FC<AddEventDialogProps> = ({ open, onClose, tasks, horses, addEvent }) => {
+export const AddEventDialog: FC<AddEventDialogProps> = ({ open, onClose, tasks, horses, addEvent, loading }) => {
   const {
     control,
     handleSubmit,
@@ -53,8 +56,9 @@ export const AddEventDialog: FC<AddEventDialogProps> = ({ open, onClose, tasks, 
     defaultValues: {
       time: new Date(),
       date: new Date(),
-      tasksIds: tasks.map(t => t.id),
+      tasksIds: [],
       horseId: '',
+      completed: false,
     },
   })
 
@@ -124,22 +128,15 @@ export const AddEventDialog: FC<AddEventDialogProps> = ({ open, onClose, tasks, 
               control={control}
               rules={{ required: 'Выберите лошадь' }}
               render={({ field }) => (
-                <FormControl fullWidth error={!!errors.horseId}>
-                  <InputLabel>Лошадь</InputLabel>
-                  <Select
-                    {...field}
-                    label="Лошадь"
-                  >
-                    {horses.map(horse => (
-                      <MenuItem key={horse.id} value={horse.id}>
-                        {horse.name}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                  {errors.horseId && (
-                    <FormHelperText>{errors.horseId.message}</FormHelperText>
-                  )}
-                </FormControl>
+                <HorseAutocomplete
+                  loading={loading}
+                  horses={horses}
+                  value={field.value}
+                  onChange={field.onChange}
+                  error={!!errors.horseId}
+                  helperText={errors.horseId?.message}
+                  required
+                />
               )}
             />
 
@@ -201,25 +198,6 @@ export const AddEventDialog: FC<AddEventDialogProps> = ({ open, onClose, tasks, 
                 </FormControl>
               )}
             />
-
-            {/* {hasCustomTask && ( */}
-            {/*   <Controller */}
-            {/*     name="name" */}
-            {/*     control={control} */}
-            {/*     rules={{ */}
-            {/*       required: hasCustomTask ? 'Введите название пользовательской задачи' : false, */}
-            {/*     }} */}
-            {/*     render={({ field }) => ( */}
-            {/*       <TextField */}
-            {/*         {...field} */}
-            {/*         label="Название пользовательской задачи" */}
-            {/*         fullWidth */}
-            {/*         error={!!errors.name} */}
-            {/*         helperText={errors.name?.message} */}
-            {/*       /> */}
-            {/*     )} */}
-            {/*   /> */}
-            {/* )} */}
           </Box>
         </DialogContent>
         <DialogActions>

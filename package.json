@@ -32,6 +32,7 @@
     "mobx": "^6.13.7",
     "mobx-react-lite": "^4.1.0",
     "mobx-tanstack-query": "^5.0.0",
+    "mui-color-input": "^7.0.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-error-boundary": "^6.0.0",
