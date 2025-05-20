@@ -18,10 +18,8 @@ import {
   DialogTitle,
   Fab,
   FormControl,
-  IconButton,
   List,
   ListItem,
-  ListItemSecondaryAction,
   Paper,
   TextField,
   Typography,
@@ -43,9 +41,10 @@ interface TaskFormDialogProps {
   onClose: () => void
   task?: Task
   isEdit?: boolean
+  onDelete?: (id: string) => void
 }
 
-const TaskFormDialog: FC<TaskFormDialogProps> = ({ open, onClose, task, isEdit = false }) => {
+const TaskFormDialog: FC<TaskFormDialogProps> = ({ open, onClose, task, isEdit = false, onDelete }) => {
   const {
     control,
     handleSubmit,
@@ -77,6 +76,13 @@ const TaskFormDialog: FC<TaskFormDialogProps> = ({ open, onClose, task, isEdit =
   const handleCancel = () => {
     reset({ title: '', color: '#1976d2' })
     onClose()
+  }
+
+  const handleDelete = () => {
+    if (task && onDelete) {
+      onDelete(task.id)
+      onClose()
+    }
   }
 
   return (
@@ -127,9 +133,16 @@ const TaskFormDialog: FC<TaskFormDialogProps> = ({ open, onClose, task, isEdit =
           </Box>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCancel} color="inherit">
-            Отмена
-          </Button>
+          {isEdit && (
+            <Button
+              onClick={handleDelete}
+              color="error"
+              variant="contained"
+              startIcon={<DeleteIcon />}
+            >
+              Удалить
+            </Button>
+          )}
           <Button type="submit" color="primary" variant="contained">
             {isEdit ? 'Сохранить' : 'Добавить'}
           </Button>
@@ -155,9 +168,7 @@ export const TasksPage: FC = observer(() => {
   }
 
   const handleDeleteTask = (id: Task['id']) => {
-    if (window.confirm('Вы уверены, что хотите удалить эту задачу?')) {
-      removeTask(id)
-    }
+    removeTask(id)
   }
 
   const handleCloseDialog = () => {
@@ -180,27 +191,46 @@ export const TasksPage: FC = observer(() => {
             {tasks.length > 0
               ? (
                   tasks.map(task => (
-                    <ListItem
+                    <Paper
                       key={task.id}
-                      divider
-                      sx={{ borderRadius: 2, mb: 1, bgcolor: 'background.paper' }}
+                      elevation={2}
+                      sx={{
+                        'm': 1,
+                        'borderRadius': 2,
+                        'transition': 'all 0.2s ease',
+                        '&:hover': {
+                          transform: 'translateY(-2px)',
+                          boxShadow: 4,
+                        },
+                        'overflow': 'hidden',
+                      }}
                     >
-                      <Chip
-                        label={task.title}
+                      <ListItem
+                        onClick={() => handleEditTask(task)}
                         sx={{
-                          backgroundColor: task.color,
-                          color: task.color ? '#fff' : undefined,
+                          cursor: 'pointer',
+                          p: 0,
                         }}
-                      />
-                      <ListItemSecondaryAction>
-                        <IconButton edge="end" onClick={() => handleEditTask(task)}>
-                          <EditIcon />
-                        </IconButton>
-                        <IconButton edge="end" onClick={() => handleDeleteTask(task.id)}>
-                          <DeleteIcon />
-                        </IconButton>
-                      </ListItemSecondaryAction>
-                    </ListItem>
+                      >
+                        <Box sx={{
+                          width: '100%',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          p: 2,
+                        }}
+                        >
+                          <Chip
+                            label={task.title}
+                            sx={{
+                              backgroundColor: task.color,
+                              color: task.color ? '#fff' : undefined,
+                            }}
+                          />
+                          <EditIcon color="action" fontSize="small" />
+                        </Box>
+                      </ListItem>
+                    </Paper>
                   ))
                 )
               : (
@@ -229,6 +259,7 @@ export const TasksPage: FC = observer(() => {
         onClose={handleCloseDialog}
         task={editingTask}
         isEdit={!!editingTask}
+        onDelete={handleDeleteTask}
       />
     </Page>
   )

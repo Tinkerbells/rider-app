@@ -41,11 +41,17 @@ export const HorseEventItem = observer(({ event, allTasks, horse, toggleEvent, h
         elevation={1}
         className="event-item"
         sx={{
-          display: 'flex',
-          p: 1.5,
-          mb: 1,
-          alignItems: 'center',
-          borderRadius: 2,
+          'display': 'flex',
+          'p': 1.5,
+          'mb': 1,
+          'alignItems': 'center',
+          'borderRadius': 2,
+          'transition': 'all 0.2s ease',
+          '&:hover': {
+            transform: 'translateY(-2px)',
+            boxShadow: 4,
+          },
+          'overflow': 'hidden',
         }}
       >
         <Box sx={{

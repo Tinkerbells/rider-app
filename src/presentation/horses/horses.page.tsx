@@ -56,6 +56,12 @@ const HorseFormDialog: FC<HorseFormDialogProps> = ({ open, onClose, horse, isEdi
     },
   })
 
+  useEffect(() => {
+    if (horse && isEdit) {
+      reset({ name: horse.name })
+    }
+  }, [horse, isEdit, reset])
+
   const onSubmit = (data: HorseFormData) => {
     if (isEdit && horse) {
       HorsesController.updateHorse(horse.id, { ...horse, name: data.name })
@@ -212,7 +218,13 @@ export const HorsesPage: FC = observer(() => {
                 <Grid container spacing={2} columns={12}>
                   {filteredHorses.map(horse => (
                     <Grid key={horse.id} size={{ xs: 6 }}>
-                      <Card sx={{ borderRadius: 2, height: '100%', display: 'flex', flexDirection: 'column' }} onClick={() => handleEditHorse(horse)}>
+                      <Card
+                        sx={{ 'borderRadius': 2, 'height': '100%', 'display': 'flex', 'flexDirection': 'column', 'transition': 'all 0.2s ease', '&:hover': {
+                          transform: 'translateY(-2px)',
+                          boxShadow: 4,
+                        }, 'overflow': 'hidden' }}
+                        onClick={() => handleEditHorse(horse)}
+                      >
                         <CardContent sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', py: 1, flexGrow: 1 }}>
                           <Avatar src={horseIcon} alt={horse.name} sx={{ width: 60, height: 60, mb: 1 }} />
                           <Typography variant="h6" align="center">
