@@ -1,15 +1,17 @@
 import type { FC } from 'react'
 
-import { useState } from 'react'
 import { observer } from 'mobx-react-lite'
+import { useEffect, useState } from 'react'
 import AddIcon from '@mui/icons-material/Add'
-import EditIcon from '@mui/icons-material/Edit'
 import DeleteIcon from '@mui/icons-material/Delete'
+import SearchIcon from '@mui/icons-material/Search'
 import { Controller, useForm } from 'react-hook-form'
 import {
   Avatar,
   Box,
   Button,
+  Card,
+  CardContent,
   Container,
   Dialog,
   DialogActions,
@@ -17,12 +19,8 @@ import {
   DialogTitle,
   Fab,
   FormControl,
-  IconButton,
-  List,
-  ListItem,
-  ListItemAvatar,
-  ListItemSecondaryAction,
-  ListItemText,
+  Grid,
+  InputAdornment,
   Paper,
   TextField,
   Typography,
@@ -31,7 +29,6 @@ import {
 import type { Horse } from '@/domain/horse.domain'
 
 import { HorsesController } from '@/controllers'
-import { publicUrl } from '@/common/helpers/publicUrl'
 
 import { Page } from '../core/page'
 import horseIcon from '../../../assets/horse.png'
@@ -80,6 +77,14 @@ const HorseFormDialog: FC<HorseFormDialogProps> = ({ open, onClose, horse, isEdi
     onClose()
   }
 
+  const handleDelete = () => {
+    if (horse) {
+      HorsesController.removeHorse(horse.id)
+      reset({ name: '' })
+      onClose()
+    }
+  }
+
   return (
     <Dialog open={open} onClose={handleCancel} fullWidth maxWidth="xs">
       <DialogTitle>{isEdit ? 'Редактировать лошадь' : 'Добавить лошадь'}</DialogTitle>
@@ -99,6 +104,7 @@ const HorseFormDialog: FC<HorseFormDialogProps> = ({ open, onClose, horse, isEdi
               <FormControl fullWidth error={!!errors.name}>
                 <TextField
                   {...field}
+                  value={field.value}
                   autoFocus
                   margin="dense"
                   label="Имя лошади"
@@ -111,9 +117,16 @@ const HorseFormDialog: FC<HorseFormDialogProps> = ({ open, onClose, horse, isEdi
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCancel} color="inherit">
-            Отмена
-          </Button>
+          {isEdit && (
+            <Button
+              onClick={handleDelete}
+              color="error"
+              variant="contained"
+              startIcon={<DeleteIcon />}
+            >
+              Удалить
+            </Button>
+          )}
           <Button type="submit" color="primary" variant="contained">
             {isEdit ? 'Сохранить' : 'Добавить'}
           </Button>
@@ -124,9 +137,26 @@ const HorseFormDialog: FC<HorseFormDialogProps> = ({ open, onClose, horse, isEdi
 }
 
 export const HorsesPage: FC = observer(() => {
-  const { horses, removeHorse } = HorsesController
+  const { horses } = HorsesController
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editingHorse, setEditingHorse] = useState<Horse | undefined>(undefined)
+  // Добавляем состояние для поискового запроса
+  const [searchQuery, setSearchQuery] = useState('')
+  // Добавляем состояние для отфильтрованных лошадей
+  const [filteredHorses, setFilteredHorses] = useState<Horse[]>(horses)
+
+  // Обновляем список отфильтрованных лошадей при изменении исходного списка или поискового запроса
+  useEffect(() => {
+    if (searchQuery.trim() === '') {
+      setFilteredHorses(horses)
+    }
+    else {
+      const query = searchQuery.toLowerCase()
+      setFilteredHorses(horses.filter(horse =>
+        horse.name.toLowerCase().includes(query),
+      ))
+    }
+  }, [horses, searchQuery])
 
   const handleAddHorse = () => {
     setEditingHorse(undefined)
@@ -138,22 +168,12 @@ export const HorsesPage: FC = observer(() => {
     setDialogOpen(true)
   }
 
-  const handleDeleteHorse = (id: Horse['id']) => {
-    if (window.confirm('Вы уверены, что хотите удалить эту лошадь?')) {
-      removeHorse(id)
-    }
-  }
-
   const handleCloseDialog = () => {
     setDialogOpen(false)
   }
 
-  const getHorseIcon = (id: string | number) => {
-    const index = typeof id === 'number'
-      ? (id % 3) + 1
-      : Number.parseInt(String(id).substr(-1), 10) % 3 + 1
-
-    return publicUrl(`assets/png2svg/horse${index}.svg`)
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value)
   }
 
   return (
@@ -167,39 +187,50 @@ export const HorsesPage: FC = observer(() => {
           </Box>
         </Paper>
 
+        {/* Добавляем поисковое поле */}
+        <Box sx={{ mb: 2, px: 1 }}>
+          <TextField
+            fullWidth
+            variant="outlined"
+            placeholder="Поиск лошадей..."
+            value={searchQuery}
+            onChange={handleSearchChange}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <SearchIcon />
+                </InputAdornment>
+              ),
+            }}
+            size="small"
+          />
+        </Box>
+
         <Box sx={{ flex: 1, overflow: 'auto', mb: 2, px: 1 }}>
-          <List sx={{ flex: 1, overflow: 'auto' }}>
-            {horses.length > 0
-              ? (
-                  horses.map(horse => (
-                    <ListItem
-                      key={horse.id}
-                      divider
-                      sx={{ borderRadius: 2, mb: 1, bgcolor: 'background.paper' }}
-                    >
-                      <ListItemAvatar>
-                        <Avatar src={horseIcon} alt={horse.name} sx={{ width: 40, height: 40 }} />
-                      </ListItemAvatar>
-                      <ListItemText primary={horse.name} />
-                      <ListItemSecondaryAction>
-                        <IconButton edge="end" onClick={() => handleEditHorse(horse)}>
-                          <EditIcon />
-                        </IconButton>
-                        <IconButton edge="end" onClick={() => handleDeleteHorse(horse.id)}>
-                          <DeleteIcon />
-                        </IconButton>
-                      </ListItemSecondaryAction>
-                    </ListItem>
-                  ))
-                )
-              : (
-                  <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
-                    <Typography variant="body1" color="text.secondary">
-                      Нет добавленных лошадей
-                    </Typography>
-                  </Box>
-                )}
-          </List>
+          {filteredHorses.length > 0
+            ? (
+                <Grid container spacing={2} columns={12}>
+                  {filteredHorses.map(horse => (
+                    <Grid key={horse.id} size={{ xs: 6 }}>
+                      <Card sx={{ borderRadius: 2, height: '100%', display: 'flex', flexDirection: 'column' }} onClick={() => handleEditHorse(horse)}>
+                        <CardContent sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', py: 1, flexGrow: 1 }}>
+                          <Avatar src={horseIcon} alt={horse.name} sx={{ width: 60, height: 60, mb: 1 }} />
+                          <Typography variant="h6" align="center">
+                            {horse.name}
+                          </Typography>
+                        </CardContent>
+                      </Card>
+                    </Grid>
+                  ))}
+                </Grid>
+              )
+            : (
+                <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
+                  <Typography variant="body1" color="text.secondary">
+                    {searchQuery ? 'Не найдено лошадей по запросу' : 'Нет добавленных лошадей'}
+                  </Typography>
+                </Box>
+              )}
         </Box>
         <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
           <Fab
