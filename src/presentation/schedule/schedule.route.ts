@@ -5,15 +5,15 @@ import { withErrorBoundary } from 'react-error-boundary'
 
 import { root } from '@/config/navigation/routes.ts'
 
-import { PageLoader } from '../ui'
-import { compose, ErrorHandler, logError, withSuspense } from '../core/react'
+import { ScheduleSkeleton } from './schedule.skeleton.tsx'
+import { compose, ErrorHandler, logError, withSuspense } from '../core/react/index.ts'
 
 const SchedulePage = lazy(() =>
   import('./schedule.page.tsx').then(module => ({ default: module.SchedulePage })),
 )
 
 const enhance = compose(
-  component => withSuspense(component, { FallbackComponent: PageLoader }),
+  component => withSuspense(component, { FallbackComponent: ScheduleSkeleton }),
   component =>
     withErrorBoundary(component, {
       FallbackComponent: ErrorHandler,

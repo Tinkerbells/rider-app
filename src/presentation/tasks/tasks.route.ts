@@ -5,7 +5,7 @@ import { withErrorBoundary } from 'react-error-boundary'
 
 import { root } from '@/config/navigation/routes'
 
-import { PageLoader } from '../ui'
+import { TasksSkeleton } from './tasks.skeleton'
 import { compose, ErrorHandler, logError, withSuspense } from '../core/react'
 
 const TasksPage = lazy(() =>
@@ -13,7 +13,7 @@ const TasksPage = lazy(() =>
 )
 
 const enhance = compose(
-  component => withSuspense(component, { FallbackComponent: PageLoader }),
+  component => withSuspense(component, { FallbackComponent: TasksSkeleton }),
   component =>
     withErrorBoundary(component, {
       FallbackComponent: ErrorHandler,
