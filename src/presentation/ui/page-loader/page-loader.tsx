@@ -1,12 +1,9 @@
-import { Backdrop, CircularProgress } from '@mui/material'
+import { CircularProgress, Container } from '@mui/material'
 
 export function PageLoader() {
   return (
-    <Backdrop
-      open
-      sx={theme => ({ color: '#fff', zIndex: theme.zIndex.drawer + 1 })}
-    >
+    <Container maxWidth="sm" sx={{ py: 2, height: 'calc(100vh - 56px)', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
       <CircularProgress color="inherit" />
-    </Backdrop>
+    </Container>
   )
 }
