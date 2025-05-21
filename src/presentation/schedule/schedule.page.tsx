@@ -96,16 +96,15 @@ export const SchedulePage: FC = observer(() => {
                       {time}
                     </Typography>
                     {events.map(event => (
-                      <Fragment key={event.id}>
-                        <HorseEventItem
-                          // Передаем событие при открытии диалога редактирования
-                          handleOpenEdit={() => handleOpenEditDialog(event)}
-                          allTasks={tasks}
-                          horse={findOneById(event.horseId)}
-                          toggleEvent={toggleEventCompleted}
-                          event={event}
-                        />
-                      </Fragment>
+                      <HorseEventItem
+                        key={event.id}
+                        // Передаем событие при открытии диалога редактирования
+                        handleOpenEdit={() => handleOpenEditDialog(event)}
+                        allTasks={tasks}
+                        horse={findOneById(event.horseId)}
+                        toggleEvent={toggleEventCompleted}
+                        event={event}
+                      />
                     ))}
                   </Box>
                 ))
@@ -148,7 +147,6 @@ export const SchedulePage: FC = observer(() => {
           </IconButton>
         </Box>
 
-        {/* Диалоги теперь находятся вне цикла рендеринга событий */}
         <AddEventDialog
           loading={loading}
           open={isAddDialogOpen}
@@ -158,7 +156,6 @@ export const SchedulePage: FC = observer(() => {
           addEvent={addEvent}
         />
 
-        {/* Рендерим диалог редактирования только когда есть выбранное событие */}
         {editingEvent && (
           <EditEventDialog
             loading={loading}
