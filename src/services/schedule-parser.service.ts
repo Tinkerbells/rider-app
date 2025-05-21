@@ -6,6 +6,7 @@ import type { Task } from '@/domain/task.domain'
 import type { Horse } from '@/domain/horse.domain'
 import type { HorseEvent } from '@/domain/horse-event.domain'
 
+import { env } from '@/config/env/env'
 import { queryClient } from '@/presentation/core/react/query-client'
 
 // Тип для ответа от LLM
@@ -78,7 +79,7 @@ export class ScheduleParserService {
     try {
       // Это место для реального API-запроса
       const client = new Anthropic({
-        apiKey: import.meta.env.VITE_ANTHROPIC_API_KEY,
+        apiKey: env.ANTHROPIC_API_KEY,
         dangerouslyAllowBrowser: true,
       })
 
