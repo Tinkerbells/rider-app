@@ -16,6 +16,7 @@
   },
   "dependencies": {
     "@antfu/eslint-config": "^4.13.1",
+    "@anthropic-ai/sdk": "^0.51.0",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",
     "@fontsource/roboto": "^5.2.5",

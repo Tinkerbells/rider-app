@@ -1,8 +1,8 @@
 import type { FC } from 'react'
 
+import { useState } from 'react'
 import { format } from 'date-fns'
 import { ru } from 'date-fns/locale'
-import { Fragment, useState } from 'react'
 import { observer } from 'mobx-react-lite'
 import AddIcon from '@mui/icons-material/Add'
 import NoteAddIcon from '@mui/icons-material/NoteAdd'
@@ -14,6 +14,7 @@ import {
   IconButton,
   Paper,
   Switch,
+  Tooltip,
   Typography,
 } from '@mui/material'
 
@@ -25,6 +26,7 @@ import { Page } from '../core/page'
 import { NotFoundIcon } from '../ui'
 import { AddEventDialog, HorseEventItem } from './components'
 import { EditEventDialog } from './components/edit-event-dialog'
+import { ScheduleParserDialog } from './components/schedule-parser-dialog'
 
 export const SchedulePage: FC = observer(() => {
   const {
@@ -42,6 +44,7 @@ export const SchedulePage: FC = observer(() => {
   const { tasks } = TasksController
 
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
+  const [isParserDialogOpen, setIsParserDialogOpen] = useState(false)
   // Изменяем подход к отслеживанию редактируемого события
   const [editingEvent, setEditingEvent] = useState<HorseEvent | null>(null)
 
@@ -53,6 +56,14 @@ export const SchedulePage: FC = observer(() => {
 
   const handleCloseAddDialog = () => {
     setIsAddDialogOpen(false)
+  }
+
+  const handleOpenParserDialog = () => {
+    setIsParserDialogOpen(true)
+  }
+
+  const handleCloseParserDialog = () => {
+    setIsParserDialogOpen(false)
   }
 
   // Изменяем функцию открытия диалога редактирования, чтобы принимать конкретное событие
@@ -131,20 +142,23 @@ export const SchedulePage: FC = observer(() => {
             <AddIcon />
           </Fab>
 
-          <IconButton
-            sx={{
-              position: 'absolute',
-              right: 16,
-              bottom: 72,
-              bgcolor: 'background.paper',
-              border: '1px solid',
-              borderColor: 'divider',
-              width: 48,
-              height: 48,
-            }}
-          >
-            <NoteAddIcon />
-          </IconButton>
+          <Tooltip title="Импорт расписания из текста">
+            <IconButton
+              onClick={handleOpenParserDialog}
+              sx={{
+                position: 'absolute',
+                right: 16,
+                bottom: 72,
+                bgcolor: 'background.paper',
+                border: '1px solid',
+                borderColor: 'divider',
+                width: 48,
+                height: 48,
+              }}
+            >
+              <NoteAddIcon />
+            </IconButton>
+          </Tooltip>
         </Box>
 
         <AddEventDialog
@@ -167,6 +181,11 @@ export const SchedulePage: FC = observer(() => {
             updateEvent={updateEvent}
           />
         )}
+
+        <ScheduleParserDialog
+          open={isParserDialogOpen}
+          onClose={handleCloseParserDialog}
+        />
       </Container>
     </Page>
   )
